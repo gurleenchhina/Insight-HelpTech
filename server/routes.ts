@@ -16,15 +16,33 @@ export async function registerRoutes(app: express.Express) {
   const wss = new WebSocketServer({ server });
 
   app.get("/api/products", (_req, res) => {
-    res.json(storage.getAllProducts());
+    try {
+      const products = storage.getAllProducts();
+      res.json(products);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ error: 'Failed to fetch products' });
+    }
   });
 
   app.get("/api/categories", (_req, res) => {
-    res.json(storage.getAllPestCategories());
+    try {
+      const categories = storage.getAllPestCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      res.status(500).json({ error: 'Failed to fetch categories' });
+    }
   });
 
   app.get("/api/recommendations", (_req, res) => {
-    res.json(storage.getAllRecommendations());
+    try {
+      const recommendations = storage.getAllRecommendations();
+      res.json(recommendations);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      res.status(500).json({ error: 'Failed to fetch recommendations' });
+    }
   });
 
   app.get("/api/labels/:name", (req, res) => {
