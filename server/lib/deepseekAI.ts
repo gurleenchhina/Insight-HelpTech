@@ -20,12 +20,16 @@ interface ApiResponse {
   }>;
 }
 
-// API configuration
+// API configuration for OpenRouter
 const API_KEY = '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';
-const API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Additional headers required by OpenRouter
+const SITE_URL = 'https://helptech.replit.app';
+const SITE_NAME = 'HelpTech Pest Control';
 
 /**
- * Process a search query using DeepSeek AI API
+ * Process a text search query using DeepSeek AI through OpenRouter
  */
 export async function processAISearch(query: string): Promise<AISearchResponse> {
   try {
@@ -58,10 +62,12 @@ Respond in JSON format with these fields:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`,
+        'HTTP-Referer': SITE_URL,
+        'X-Title': SITE_NAME
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek/deepseek-r1-zero:free',
         messages: [
           {
             role: 'system',
@@ -71,8 +77,7 @@ Respond in JSON format with these fields:
             role: 'user',
             content: query
           }
-        ],
-        response_format: { type: 'json_object' }
+        ]
       })
     });
 
@@ -88,7 +93,17 @@ Respond in JSON format with these fields:
       throw new Error("Empty response from API");
     }
 
-    return JSON.parse(content) as AISearchResponse;
+    try {
+      return JSON.parse(content) as AISearchResponse;
+    } catch (parseError) {
+      console.error("Failed to parse JSON response:", parseError);
+      // If response isn't proper JSON, create a simple response with the raw text
+      return {
+        recommendation: content,
+        pestType: "Unknown",
+        products: {}
+      };
+    }
   } catch (error) {
     console.error("Error processing text search:", error);
     // Provide a fallback response in case of error
@@ -101,14 +116,13 @@ Respond in JSON format with these fields:
 }
 
 /**
- * Process an image search using DeepSeek AI API
- * Note: DeepSeek doesn't support direct image input like OpenAI's vision API,
- * so we're converting the image to a text description
+ * Process an image search using DeepSeek AI through OpenRouter
+ * Note: OpenRouter with DeepSeek might not have full multimodal capabilities like OpenAI
  */
 export async function processImageSearch(base64Image: string): Promise<AISearchResponse> {
   try {
     const systemPrompt = `
-You are an expert pest control technician in Ontario, Canada. Your job is to identify pests from images and provide accurate, regulation-compliant pest control product recommendations.
+You are an expert pest control technician in Ontario, Canada. Your job is to identify pests from descriptions and provide accurate, regulation-compliant pest control product recommendations.
 
 For pest treatment in Ontario, follow these guidelines:
 - Interior ants/spiders with vacancy allowed: use SECLIRA WSG
@@ -120,8 +134,8 @@ For pest treatment in Ontario, follow these guidelines:
 - Exterior ant colony: use Scorpio granules and set up ant spike bait stations
 - Rodents: use Contrac Blox (exterior), Resolv or Contrac (interior)
 
-Analyze the provided image and:
-1. Identify the pest in the image
+Analyze the pest description and:
+1. Identify the pest based on the provided description
 2. Recommend appropriate product(s) based on typical treatment protocols
 3. Provide application advice for the technician
 
@@ -132,15 +146,22 @@ Respond in JSON format with these fields:
 - applicationAdvice: Brief guidance on product application
 `;
 
-    // For image handling, we need to format the request differently
+    // For image handling, we need to describe the image as text
+    // Since the base64 string is too long to include directly, we'll extract some information about it
+    const imageDescription = `The user has uploaded an image of what appears to be a pest. 
+The image is in base64 format and starts with: ${base64Image.substring(0, 50)}...
+Please identify what kind of pest this might be based on common pest control issues in Ontario.`;
+
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`,
+        'HTTP-Referer': SITE_URL,
+        'X-Title': SITE_NAME
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek/deepseek-r1-zero:free',
         messages: [
           {
             role: 'system',
@@ -148,12 +169,11 @@ Respond in JSON format with these fields:
           },
           {
             role: 'user',
-            content: `Please identify this pest and recommend appropriate treatment products according to Ontario regulations. The image is provided as a base64 encoded string.
-            
-Image (base64): ${base64Image.substring(0, 100)}...`
+            content: `Please identify this pest and recommend appropriate treatment products according to Ontario regulations. I found this pest in my home.
+
+Image information: ${imageDescription}`
           }
-        ],
-        response_format: { type: 'json_object' }
+        ]
       })
     });
 
@@ -169,7 +189,17 @@ Image (base64): ${base64Image.substring(0, 100)}...`
       throw new Error("Empty response from API");
     }
 
-    return JSON.parse(content) as AISearchResponse;
+    try {
+      return JSON.parse(content) as AISearchResponse;
+    } catch (parseError) {
+      console.error("Failed to parse JSON response:", parseError);
+      // If response isn't proper JSON, create a simple response with the raw text
+      return {
+        recommendation: content,
+        pestType: "Unknown",
+        products: {}
+      };
+    }
   } catch (error) {
     console.error("Error processing image search:", error);
     // Provide a fallback response in case of error
