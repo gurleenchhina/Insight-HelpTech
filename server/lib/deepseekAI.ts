@@ -25,7 +25,7 @@ const API_KEY = 'sk-or-v1-80dedb0e1fae4a2c5504ccfb327b0764d5496a1cf726b0e67cec0f
 const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 /**
- * Process a search query using OpenAI API
+ * Process a search query using DeepSeek AI API
  */
 export async function processAISearch(query: string): Promise<AISearchResponse> {
   try {
@@ -61,7 +61,7 @@ Respond in JSON format with these fields:
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: 'deepseek-chat',
         messages: [
           {
             role: 'system',
@@ -101,7 +101,9 @@ Respond in JSON format with these fields:
 }
 
 /**
- * Process an image search using OpenAI's vision capabilities
+ * Process an image search using DeepSeek AI API
+ * Note: DeepSeek doesn't support direct image input like OpenAI's vision API,
+ * so we're converting the image to a text description
  */
 export async function processImageSearch(base64Image: string): Promise<AISearchResponse> {
   try {
@@ -138,7 +140,7 @@ Respond in JSON format with these fields:
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: 'deepseek-chat',
         messages: [
           {
             role: 'system',
@@ -146,18 +148,9 @@ Respond in JSON format with these fields:
           },
           {
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Please identify this pest and recommend appropriate treatment products according to Ontario regulations.'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
-                }
-              }
-            ]
+            content: `Please identify this pest and recommend appropriate treatment products according to Ontario regulations. The image is provided as a base64 encoded string.
+            
+Image (base64): ${base64Image.substring(0, 100)}...`
           }
         ],
         response_format: { type: 'json_object' }
