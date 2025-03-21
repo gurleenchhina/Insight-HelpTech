@@ -16,15 +16,25 @@ import pdf from 'pdf-parse';
 
 
 async function getAllLabelsContent() {
-    const labelsDir = path.join(process.cwd(), 'attached_assets');
-    const labelFiles = fs.readdirSync(labelsDir).filter(file => path.extname(file) === '.pdf');
-    const labelContent = await Promise.all(labelFiles.map(async (file) => {
-        const filePath = path.join(labelsDir, file);
-        const dataBuffer = fs.readFileSync(filePath);
-        const data = await pdf(dataBuffer);
-        return data.text;
-    }));
-    return labelContent.join(' ');
+    try {
+        const labelsDir = path.join(process.cwd(), 'attached_assets');
+        const labelFiles = fs.readdirSync(labelsDir).filter(file => path.extname(file) === '.pdf');
+        const labelContent = await Promise.all(labelFiles.map(async (file) => {
+            try {
+                const filePath = path.join(labelsDir, file);
+                const dataBuffer = fs.readFileSync(filePath);
+                const data = await pdf(dataBuffer);
+                return data.text;
+            } catch (error) {
+                console.error(`Error reading PDF file ${file}:`, error);
+                return '';
+            }
+        }));
+        return labelContent.filter(text => text !== '').join(' ');
+    } catch (error) {
+        console.error('Error reading label content:', error);
+        return '';
+    }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
