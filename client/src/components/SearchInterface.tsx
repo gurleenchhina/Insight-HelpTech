@@ -1,3 +1,11 @@
+
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+
 import { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +63,26 @@ const SearchInterface = ({ onSearch, onImageSearch }: SearchInterfaceProps) => {
             className="w-full bg-white py-3 px-4 pr-10 rounded-lg shadow-sm border-0 focus:ring-2 focus:ring-primary"
           />
           <div className="absolute right-0 top-0 h-full flex items-center pr-3">
-            <Button type="button" variant="ghost" size="icon" className="text-neutral-medium hover:text-primary">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="icon" 
+              className="text-neutral-medium hover:text-primary"
+              onClick={() => {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                  const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+                  const recognition = new SpeechRecognition();
+                  recognition.lang = 'en-US';
+                  recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    setQuery(transcript);
+                  };
+                  recognition.start();
+                } else {
+                  alert('Speech recognition is not supported in your browser.');
+                }
+              }}
+            >
               <span className="material-icons">mic</span>
             </Button>
           </div>
