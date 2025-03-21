@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { PestCategory } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 
 interface PestCategoryGridProps {
   onPestSelect: (pestName: string) => void;
@@ -11,6 +12,17 @@ const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ['/api/pest-categories'],
   });
+  
+  // Mapping of pest names to emoji icons
+  const pestEmojis: Record<string, string> = {
+    'Ants': '🐜',
+    'Spiders': '🕷️',
+    'Wasps': '🐝',
+    'Stink Bugs': '🐞',
+    'Rodents': '🐭',
+    'Cockroaches': '🪳',
+    'Other': '🔍'
+  };
 
   if (isLoading) {
     return (
