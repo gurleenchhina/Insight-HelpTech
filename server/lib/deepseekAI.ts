@@ -11,8 +11,8 @@ export interface AISearchResponse {
   applicationAdvice?: string;
 }
 
-// Type definition for DeepSeek API response
-interface DeepSeekResponse {
+// Type definition for API response
+interface ApiResponse {
   choices: Array<{
     message: {
       content: string;
@@ -20,12 +20,12 @@ interface DeepSeekResponse {
   }>;
 }
 
-// DeepSeek API configuration
-const DEEPSEEK_API_KEY = process.env.OPENAI_API_KEY || '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';
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+// API configuration
+const API_KEY = process.env.OPENAI_API_KEY || '';
+const API_URL = 'https://api.openai.com/v1/chat/completions';
 
 /**
- * Process a search query using DeepSeek API
+ * Process a search query using OpenAI API
  */
 export async function processAISearch(query: string): Promise<AISearchResponse> {
   try {
@@ -54,14 +54,14 @@ Respond in JSON format with these fields:
 - applicationAdvice: Brief guidance on product application
 `;
 
-    const response = await fetch(DEEPSEEK_API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: 'system',
@@ -78,19 +78,19 @@ Respond in JSON format with these fields:
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json() as DeepSeekResponse;
+    const data = await response.json() as ApiResponse;
     const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      throw new Error("Empty response from DeepSeek API");
+      throw new Error("Empty response from API");
     }
 
     return JSON.parse(content) as AISearchResponse;
   } catch (error) {
-    console.error("Error processing text search with DeepSeek API:", error);
+    console.error("Error processing text search:", error);
     // Provide a fallback response in case of error
     return {
       recommendation: "I encountered an issue processing your request. Please try again with more details about the pest problem.",
@@ -101,7 +101,7 @@ Respond in JSON format with these fields:
 }
 
 /**
- * Process an image search using DeepSeek's vision capabilities
+ * Process an image search using OpenAI's vision capabilities
  */
 export async function processImageSearch(base64Image: string): Promise<AISearchResponse> {
   try {
@@ -131,14 +131,14 @@ Respond in JSON format with these fields:
 `;
 
     // For image handling, we need to format the request differently
-    const response = await fetch(DEEPSEEK_API_URL, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: 'system',
@@ -166,19 +166,19 @@ Respond in JSON format with these fields:
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json() as DeepSeekResponse;
+    const data = await response.json() as ApiResponse;
     const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      throw new Error("Empty response from DeepSeek API");
+      throw new Error("Empty response from API");
     }
 
     return JSON.parse(content) as AISearchResponse;
   } catch (error) {
-    console.error("Error processing image search with DeepSeek API:", error);
+    console.error("Error processing image search:", error);
     // Provide a fallback response in case of error
     return {
       recommendation: "I encountered an issue processing your image. Please try again with a clearer image or provide a text description of the pest problem.",
