@@ -24,9 +24,9 @@ const LoadingScreen = ({ onLoadingComplete, className }: LoadingScreenProps) => 
 
   return (
     <div className={cn("fixed inset-0 flex flex-col items-center justify-center bg-primary/5 z-50", className)}>
-      <div className="flex flex-col items-center justify-center space-y-8">
-        {/* Logo and pulse effect */}
-        <div className="relative">
+      <div className="flex flex-col items-center justify-center space-y-10">
+        {/* Logo section at top */}
+        <div className="relative mb-4">
           <div className="w-64 h-32 flex items-center justify-center">
             {/* Insight Pest Solutions Logo */}
             <div className="z-10 rounded-lg overflow-hidden shadow-lg">
@@ -40,18 +40,17 @@ const LoadingScreen = ({ onLoadingComplete, className }: LoadingScreenProps) => 
               HelpTech
             </div>
           </div>
-          <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping"></div>
         </div>
         
-        {/* Loading animation */}
+        {/* Loading animation in center */}
         <div className="flex space-x-2">
           <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
           <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
           <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
         </div>
         
-        {/* Tagline */}
-        <div className="text-sm font-light text-neutral-600 mt-6">
+        {/* Tagline at bottom */}
+        <div className="text-sm font-light text-neutral-600">
           By the technician for the technicians
         </div>
       </div>

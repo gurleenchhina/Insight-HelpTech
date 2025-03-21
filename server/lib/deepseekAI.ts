@@ -21,7 +21,7 @@ interface ApiResponse {
 }
 
 // API configuration
-const API_KEY = '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';
+const API_KEY = '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';
 const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 /**

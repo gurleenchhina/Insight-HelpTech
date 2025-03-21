@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Product } from "@/lib/types";
 
 interface ProductCardProps {
@@ -46,33 +47,83 @@ const ProductCard = ({ product, expanded = false }: ProductCardProps) => {
       
       {isExpanded && (
         <CardContent className="px-4 pb-4">
-          {/* Active Ingredients Section */}
-          <div className="mb-3">
-            <h4 className="text-sm font-bold mb-1 text-neutral-dark">Active Ingredient:</h4>
-            <p className="text-sm">{product.activeIngredient}</p>
-          </div>
-          
-          {/* Application Rate Section */}
-          <div className="mb-3">
-            <h4 className="text-sm font-bold mb-1 text-neutral-dark">Application Rate:</h4>
-            <p className="text-sm">{product.applicationRate}</p>
-          </div>
-          
-          {/* Safety Warnings Section */}
-          <div className="mb-3 p-2 bg-error-light bg-opacity-10 rounded">
-            <h4 className="text-sm font-bold mb-1 text-error">Safety Precautions:</h4>
-            <ul className="text-sm list-disc list-inside">
-              {product.safetyPrecautions.map((precaution, index) => (
-                <li key={index}>{precaution}</li>
-              ))}
-            </ul>
-          </div>
+          <Tabs defaultValue="application" className="w-full mt-3">
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="application">Application</TabsTrigger>
+              <TabsTrigger value="safety">Safety</TabsTrigger>
+              <TabsTrigger value="firstaid">First Aid</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="application" className="pt-3">
+              {/* Active Ingredients Section */}
+              <div className="mb-3">
+                <h4 className="text-sm font-bold mb-1 text-neutral-dark">Active Ingredient:</h4>
+                <p className="text-sm">{product.activeIngredient}</p>
+              </div>
+              
+              {/* Application Rate Section */}
+              <div className="mb-3">
+                <h4 className="text-sm font-bold mb-1 text-neutral-dark">Application Rate:</h4>
+                <p className="text-sm">{product.applicationRate}</p>
+              </div>
+              
+              {/* Application Advice */}
+              {product.advice && (
+                <div className="mb-3 p-2 bg-blue-50 rounded">
+                  <h4 className="text-sm font-bold mb-1 text-blue-700">Application Notes:</h4>
+                  <p className="text-sm text-blue-700">{product.advice}</p>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="safety" className="pt-3">
+              {/* Safety Warnings Section */}
+              <div className="p-3 bg-error-light bg-opacity-10 rounded">
+                <h4 className="text-sm font-bold mb-2 text-error">Safety Precautions:</h4>
+                <ul className="text-sm list-disc list-inside">
+                  {product.safetyPrecautions.map((precaution, index) => (
+                    <li key={index} className="mb-1">{precaution}</li>
+                  ))}
+                </ul>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="firstaid" className="pt-3">
+              {/* First Aid Instructions */}
+              <div className="p-3 bg-emerald-50 rounded">
+                <h4 className="text-sm font-bold mb-2 text-emerald-700">First Aid Measures:</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="p-2 border-l-2 border-emerald-500">
+                    <p className="font-medium">If Swallowed:</p>
+                    <p>Call a poison control center or doctor immediately for treatment advice. Do not induce vomiting unless told to do so by poison control or doctor.</p>
+                  </div>
+                  
+                  <div className="p-2 border-l-2 border-emerald-500">
+                    <p className="font-medium">If Inhaled:</p>
+                    <p>Move person to fresh air. If person is not breathing, call 911 or an ambulance, then give artificial respiration.</p>
+                  </div>
+                  
+                  <div className="p-2 border-l-2 border-emerald-500">
+                    <p className="font-medium">If on Skin:</p>
+                    <p>Take off contaminated clothing. Rinse skin immediately with plenty of water for 15-20 minutes.</p>
+                  </div>
+                  
+                  <div className="p-2 border-l-2 border-emerald-500">
+                    <p className="font-medium">If in Eyes:</p>
+                    <p>Hold eye open and rinse slowly and gently with water for 15-20 minutes. Remove contact lenses after the first 5 minutes, then continue rinsing.</p>
+                  </div>
+                  
+                  <p className="mt-2 font-bold text-center">Poison Control Center: 1-800-222-1222</p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
           
           {/* View Full Label Button */}
           {product.fullLabelLink && (
             <Button 
               variant="outline" 
-              className="w-full text-center py-2 border border-primary text-primary rounded hover:bg-primary hover:text-white transition-colors"
+              className="w-full mt-4 text-center py-2 border border-primary text-primary rounded hover:bg-primary hover:text-white transition-colors"
               onClick={() => window.open(product.fullLabelLink, '_blank')}
             >
               View Full Label
