@@ -12,6 +12,20 @@ import { processAISearch, processImageSearch } from "./lib/deepseekAI";
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
+import pdf from 'pdf-parse';
+
+
+async function getAllLabelsContent() {
+    const labelsDir = path.join(process.cwd(), 'attached_assets');
+    const labelFiles = fs.readdirSync(labelsDir).filter(file => path.extname(file) === '.pdf');
+    const labelContent = await Promise.all(labelFiles.map(async (file) => {
+        const filePath = path.join(labelsDir, file);
+        const dataBuffer = fs.readFileSync(filePath);
+        const data = await pdf(dataBuffer);
+        return data.text;
+    }));
+    return labelContent.join(' ');
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Root API endpoint
@@ -34,11 +48,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { pestCategory, location } = recommendationsRequestSchema.parse(req.body);
       const recommendations = await storage.getRecommendationsByPestAndLocation(pestCategory, location);
-      
+
       if (recommendations.length === 0) {
         return res.status(404).json({ message: "No recommendations found for the specified pest and location" });
       }
-      
+
       res.json(recommendations.map(product => pestProductResponseSchema.parse(product)));
     } catch (error) {
       if (error instanceof ZodError) {
@@ -52,12 +66,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/search", async (req: Request, res: Response) => {
     try {
       const { query } = aiSearchRequestSchema.parse(req.body);
-      
+
       // Save the search query to history
       await storage.addSearchQuery(query);
-      
+
       // Process with DeepSeek AI
-      const result = await processAISearch(query);
+      const labelInfo = await getAllLabelsContent();
+      const result = await processAISearch(query, labelInfo);
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -71,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/image-search", async (req: Request, res: Response) => {
     try {
       const { image } = aiImageSearchRequestSchema.parse(req.body);
-      
+
       // Process with DeepSeek AI
       const result = await processImageSearch(image);
       res.json(result);
@@ -98,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/labels/:product", (req: Request, res: Response) => {
     const product = req.params.product;
     let filePath = "";
-    
+
     switch(product) {
       case "seclira":
         res.setHeader('Content-Type', 'application/pdf');
@@ -115,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       default:
         return res.status(404).json({ message: "Label not found" });
     }
-    
+
     // Check if file exists
     if (fs.existsSync(filePath)) {
       const fileStream = fs.createReadStream(filePath);

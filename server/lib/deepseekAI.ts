@@ -36,6 +36,15 @@ export async function processAISearch(query: string): Promise<AISearchResponse> 
     const systemPrompt = `
 You are an expert pest control technician in Ontario, Canada. Your job is to provide accurate, regulation-compliant pest control product recommendations.
 
+Here is detailed label information from official product documentation to help with accurate recommendations:
+${labelInfo}
+
+When recommending products:
+1. Match treatment locations exactly as specified (e.g. "around soffits" = "around soffits")
+2. Recognize equivalent terms (e.g. "wasps in soffits" = "wasps around soffits")
+3. For hard-to-reach areas, recommend Gotcha Sprayer with appropriate product
+4. Consider KONK for visible nests and Drione for void treatments as complementary options
+
 For pest treatment in Ontario, follow these guidelines:
 - Interior ants/spiders with vacancy allowed: use SECLIRA WSG
 - Interior ants with no vacancy: use Greenway Ant & Roach Gel and Maxforce Quantum gel
