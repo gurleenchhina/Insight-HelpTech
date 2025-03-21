@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import pdfParse from 'pdf-parse/lib/pdf-parse.js';
+import pdf from 'pdf-parse';
 import fs from 'fs';
 import path from 'path';
 
