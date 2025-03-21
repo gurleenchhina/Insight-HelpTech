@@ -56,17 +56,11 @@ const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
           onClick={() => onPestSelect(category.name)}
         >
           <CardContent className="flex flex-col items-center p-4">
-            {category.imageUrl ? (
-              <img 
-                src={category.imageUrl} 
-                alt={category.name} 
-                className="w-20 h-20 object-cover rounded-full mb-2" 
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-neutral-light mb-2 flex items-center justify-center">
-                <span className="material-icons text-neutral-medium">bug_report</span>
-              </div>
-            )}
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-primary/30 mb-2 flex items-center justify-center border-2 border-primary/50">
+              <span className="text-4xl" aria-hidden="true">
+                {pestEmojis[category.name] || pestEmojis['Other']}
+              </span>
+            </div>
             <span className="font-medium text-center">{category.name}</span>
           </CardContent>
         </Card>
@@ -78,7 +72,11 @@ const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
         onClick={() => onPestSelect('Other')}
       >
         <CardContent className="flex flex-col items-center p-4">
-          <span className="material-icons text-5xl text-neutral-medium mb-2">more_horiz</span>
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 mb-2 flex items-center justify-center border-2 border-gray-300">
+            <span className="text-4xl" aria-hidden="true">
+              {pestEmojis['Other']}
+            </span>
+          </div>
           <span className="font-medium text-center">Other Pests</span>
         </CardContent>
       </Card>

@@ -16,7 +16,7 @@ import { ZodError } from "zod";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Root API endpoint
   app.get("/api", (req: Request, res: Response) => {
-    res.json({ message: "PestPro Advisor API" });
+    res.json({ message: "HelpTech API" });
   });
 
   // Get all pest categories
