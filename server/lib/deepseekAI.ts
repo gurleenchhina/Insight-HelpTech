@@ -11,6 +11,15 @@ export interface AISearchResponse {
   applicationAdvice?: string;
 }
 
+// Type definition for DeepSeek API response
+interface DeepSeekResponse {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+}
+
 // DeepSeek API configuration
 const DEEPSEEK_API_KEY = process.env.OPENAI_API_KEY || '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';
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
@@ -72,8 +81,8 @@ Respond in JSON format with these fields:
       throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    const data = await response.json() as DeepSeekResponse;
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
       throw new Error("Empty response from DeepSeek API");
@@ -160,8 +169,8 @@ Respond in JSON format with these fields:
       throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
-    const content = data.choices[0].message.content;
+    const data = await response.json() as DeepSeekResponse;
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
       throw new Error("Empty response from DeepSeek API");

@@ -9,7 +9,7 @@ interface PestCategoryGridProps {
 }
 
 const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
-  const { data: categories, isLoading, error } = useQuery({
+  const { data: categories, isLoading, error } = useQuery<PestCategory[]>({
     queryKey: ['/api/pest-categories'],
   });
   
@@ -49,7 +49,7 @@ const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
 
   return (
     <div className="grid grid-cols-2 gap-4 mb-6">
-      {categories?.map((category: PestCategory) => (
+      {(categories || []).map((category: PestCategory) => (
         <Card 
           key={category.id}
           className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
