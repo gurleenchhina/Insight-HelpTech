@@ -6,10 +6,9 @@ import pdf from "pdf-parse";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
-import { Storage } from "./storage";
+import { storage } from "./storage";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const storage = new Storage();
 
 export async function registerRoutes(app: express.Express) {
   const server = createServer(app);
@@ -35,9 +34,13 @@ export async function registerRoutes(app: express.Express) {
     }
   });
 
-  app.get("/api/recommendations", (_req, res) => {
+  app.get("/api/recommendations", (req, res) => {
     try {
-      const recommendations = storage.getAllRecommendations();
+      const { pest, location } = req.query;
+      if (!pest || !location) {
+        return res.status(400).json({ error: 'Missing pest or location parameter' });
+      }
+      const recommendations = storage.getRecommendationsByPestAndLocation(pest.toString(), location.toString());
       res.json(recommendations);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
