@@ -27,9 +27,16 @@ const LoadingScreen = ({ onLoadingComplete, className }: LoadingScreenProps) => 
       <div className="flex flex-col items-center justify-center space-y-8">
         {/* Logo and pulse effect */}
         <div className="relative">
-          <div className="w-32 h-32 flex items-center justify-center">
-            {/* Logo placeholder - would be replaced with actual logo */}
-            <div className="text-4xl font-bold text-primary bg-white p-4 rounded-lg shadow-lg z-10">
+          <div className="w-64 h-32 flex items-center justify-center">
+            {/* Insight Pest Solutions Logo */}
+            <div className="z-10 rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src="/images/insight_pest_solutions_logo.jpeg" 
+                alt="Insight Pest Solutions" 
+                className="w-full h-auto object-contain"
+              />
+            </div>
+            <div className="absolute top-0 left-0 mt-2 text-lg font-bold text-white bg-primary px-3 py-1 rounded-tr-lg rounded-br-lg z-20 opacity-90">
               HelpTech
             </div>
           </div>
