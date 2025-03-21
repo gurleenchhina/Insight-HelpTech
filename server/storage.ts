@@ -17,19 +17,19 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Products
   getAllProducts(): Promise<Product[]>;
   getProductById(id: number): Promise<Product | undefined>;
-  
+
   // Pest Categories
   getAllPestCategories(): Promise<PestCategory[]>;
   getPestCategoryById(id: number): Promise<PestCategory | undefined>;
   getPestCategoryByName(name: string): Promise<PestCategory | undefined>;
-  
+
   // Product Recommendations
   getRecommendationsByPestAndLocation(pestName: string, location: string): Promise<(Product & { advice?: string })[]>;
-  
+
   // Search History
   addSearchQuery(query: string): Promise<SearchHistoryItem>;
   getRecentSearches(limit: number): Promise<SearchHistoryItem[]>;
@@ -41,29 +41,36 @@ export class MemStorage implements IStorage {
   private pestCategories: Map<number, PestCategory>;
   private pestProductRecommendations: Map<number, PestProductRecommendation>;
   private searchHistoryItems: Map<number, SearchHistoryItem>;
-  
+
   private currentUserId: number;
   private currentProductId: number;
   private currentPestCategoryId: number;
   private currentRecommendationId: number;
   private currentSearchHistoryId: number;
-  
+
   constructor() {
     this.users = new Map();
     this.products = new Map();
     this.pestCategories = new Map();
     this.pestProductRecommendations = new Map();
     this.searchHistoryItems = new Map();
-    
+
     this.currentUserId = 1;
     this.currentProductId = 1;
     this.currentPestCategoryId = 1;
     this.currentRecommendationId = 1;
     this.currentSearchHistoryId = 1;
-    
-    this.initializeData();
   }
-  
+
+  async initialize(): Promise<void> {
+    try {
+      this.initializeData();
+    } catch (error) {
+      console.error("Failed to initialize storage data:", error);
+      throw error; // Re-throw to allow higher-level handling
+    }
+  }
+
   private initializeData() {
     // Add pest categories
     const categories = [
@@ -73,11 +80,11 @@ export class MemStorage implements IStorage {
       { id: this.currentPestCategoryId++, name: "Stinkbugs", imageUrl: "https://images.unsplash.com/photo-1596839347042-6ee447982327?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
       { id: this.currentPestCategoryId++, name: "Rodents", imageUrl: "https://images.unsplash.com/photo-1548247414-3ab903371542?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
     ];
-    
+
     categories.forEach(category => {
       this.pestCategories.set(category.id, category);
     });
-    
+
     // Add products
     const productsData = [
       { 
@@ -216,11 +223,11 @@ export class MemStorage implements IStorage {
         fullLabelLink: "/api/labels/resolv-soft-bait"
       }
     ];
-    
+
     productsData.forEach(product => {
       this.products.set(product.id, product);
     });
-    
+
     // Add product recommendations
     const recommendations = [
       // Ants Interior
@@ -245,7 +252,7 @@ export class MemStorage implements IStorage {
         location: "interior",
         advice: "Apply small droplets near ant trails, entry points, and in cracks and crevices. Product is slow-acting, allowing ants to return to the colony and share the bait."
       },
-      
+
       // Ants Exterior
       {
         id: this.currentRecommendationId++,
@@ -261,7 +268,7 @@ export class MemStorage implements IStorage {
         location: "exterior",
         advice: "Use as an alternative to Suspend Polyzone for exterior perimeter treatments. Apply to foundation up to 3 feet and extend outward 2-10 feet."
       },
-      
+
       // Spiders Interior
       {
         id: this.currentRecommendationId++,
@@ -277,7 +284,7 @@ export class MemStorage implements IStorage {
         location: "interior",
         advice: "Apply in voids, cracks and crevices where spiders may hide. Effective for controlling spiders when customers cannot vacate."
       },
-      
+
       // Spiders Exterior
       {
         id: this.currentRecommendationId++,
@@ -293,7 +300,7 @@ export class MemStorage implements IStorage {
         location: "exterior",
         advice: "Apply to exterior surfaces where spiders are present. Focus on protected areas like eaves, window frames, and doorways."
       },
-      
+
       // Wasps
       {
         id: this.currentRecommendationId++,
@@ -309,7 +316,7 @@ export class MemStorage implements IStorage {
         location: "exterior",
         advice: "For preventative treatment, apply dust in voids, cracks and crevices where wasps may nest, particularly under eaves and in wall voids."
       },
-      
+
       // Stinkbugs
       {
         id: this.currentRecommendationId++,
@@ -325,7 +332,7 @@ export class MemStorage implements IStorage {
         location: "exterior",
         advice: "Apply spot treatments around windows, doors, and other entry points. Also treat external cracks and crevices."
       },
-      
+
       // Rodents
       {
         id: this.currentRecommendationId++,
@@ -349,88 +356,148 @@ export class MemStorage implements IStorage {
         advice: "Place in tamper-resistant bait stations indoors where rodent activity is observed. Secure stations to prevent movement."
       }
     ];
-    
+
     recommendations.forEach(recommendation => {
       this.pestProductRecommendations.set(recommendation.id, recommendation);
     });
   }
-  
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    try {
+      return this.users.get(id);
+    } catch (error) {
+      console.error("Error getting user:", error);
+      return undefined;
+    }
   }
-  
+
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    try {
+      return Array.from(this.users.values()).find(
+        (user) => user.username === username,
+      );
+    } catch (error) {
+      console.error("Error getting user by username:", error);
+      return undefined;
+    }
   }
-  
+
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    try {
+      const id = this.currentUserId++;
+      const user: User = { ...insertUser, id };
+      this.users.set(id, user);
+      return user;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
   }
-  
+
   // Products methods
   async getAllProducts(): Promise<Product[]> {
-    return Array.from(this.products.values());
+    try {
+      return Array.from(this.products.values());
+    } catch (error) {
+      console.error("Error getting all products:", error);
+      return [];
+    }
   }
-  
+
   async getProductById(id: number): Promise<Product | undefined> {
-    return this.products.get(id);
+    try {
+      return this.products.get(id);
+    } catch (error) {
+      console.error("Error getting product by ID:", error);
+      return undefined;
+    }
   }
-  
+
   // Pest Categories methods
   async getAllPestCategories(): Promise<PestCategory[]> {
-    return Array.from(this.pestCategories.values());
+    try {
+      return Array.from(this.pestCategories.values());
+    } catch (error) {
+      console.error("Error getting all pest categories:", error);
+      return [];
+    }
   }
-  
+
   async getPestCategoryById(id: number): Promise<PestCategory | undefined> {
-    return this.pestCategories.get(id);
+    try {
+      return this.pestCategories.get(id);
+    } catch (error) {
+      console.error("Error getting pest category by ID:", error);
+      return undefined;
+    }
   }
-  
+
   async getPestCategoryByName(name: string): Promise<PestCategory | undefined> {
-    return Array.from(this.pestCategories.values()).find(
-      (category) => category.name.toLowerCase() === name.toLowerCase(),
-    );
+    try {
+      return Array.from(this.pestCategories.values()).find(
+        (category) => category.name.toLowerCase() === name.toLowerCase(),
+      );
+    } catch (error) {
+      console.error("Error getting pest category by name:", error);
+      return undefined;
+    }
   }
-  
+
   // Product Recommendations methods
   async getRecommendationsByPestAndLocation(pestName: string, location: string): Promise<(Product & { advice?: string })[]> {
-    const pestCategory = await this.getPestCategoryByName(pestName);
-    if (!pestCategory) return [];
-    
-    const recommendations = Array.from(this.pestProductRecommendations.values())
-      .filter(rec => rec.pestCategoryId === pestCategory.id && rec.location === location);
-    
-    const result = await Promise.all(recommendations.map(async rec => {
-      const product = await this.getProductById(rec.productId);
-      if (!product) return null;
-      return {
-        ...product,
-        advice: rec.advice
-      };
-    }));
-    
-    return result.filter((item): item is (Product & { advice?: string }) => item !== null);
+    try {
+      const pestCategory = await this.getPestCategoryByName(pestName);
+      if (!pestCategory) return [];
+
+      const recommendations = Array.from(this.pestProductRecommendations.values())
+        .filter(rec => rec.pestCategoryId === pestCategory.id && rec.location === location);
+
+      const result = await Promise.all(recommendations.map(async rec => {
+        const product = await this.getProductById(rec.productId);
+        if (!product) return null;
+        return {
+          ...product,
+          advice: rec.advice
+        };
+      }));
+
+      return result.filter((item): item is (Product & { advice?: string }) => item !== null);
+    } catch (error) {
+      console.error("Error getting recommendations:", error);
+      return [];
+    }
   }
-  
+
   // Search History methods
   async addSearchQuery(query: string): Promise<SearchHistoryItem> {
-    const id = this.currentSearchHistoryId++;
-    const timestamp = new Date().toISOString();
-    const searchItem: SearchHistoryItem = { id, query, timestamp };
-    this.searchHistoryItems.set(id, searchItem);
-    return searchItem;
+    try {
+      const id = this.currentSearchHistoryId++;
+      const timestamp = new Date().toISOString();
+      const searchItem: SearchHistoryItem = { id, query, timestamp };
+      this.searchHistoryItems.set(id, searchItem);
+      return searchItem;
+    } catch (error) {
+      console.error("Error adding search query:", error);
+      throw error;
+    }
   }
-  
+
   async getRecentSearches(limit: number): Promise<SearchHistoryItem[]> {
-    return Array.from(this.searchHistoryItems.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, limit);
+    try {
+      return Array.from(this.searchHistoryItems.values())
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, limit);
+    } catch (error) {
+      console.error("Error getting recent searches:", error);
+      return [];
+    }
   }
 }
 
 export const storage = new MemStorage();
+try {
+  await storage.initialize();
+} catch (error) {
+  console.error('Failed to initialize storage:', error);
+}

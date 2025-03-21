@@ -6,6 +6,18 @@ import { setupVite, serveStatic, log } from "./vite";
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
+
+// Handle errors globally
+app.use((err, _req, res, next) => {
+  console.error('Global error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+  next(err);
+});
+
+// Add error handler for uncaught promises
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
