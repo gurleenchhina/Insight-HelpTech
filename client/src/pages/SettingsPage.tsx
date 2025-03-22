@@ -96,19 +96,22 @@ const SettingsPage = ({ settings, updateSetting, user, onLogout, onInventoryUpda
         </TabsContent>
         
         <TabsContent value="account">
-          <SettingsPanel 
-            userId={user.id}
-            settings={settings}
-            onSettingsUpdate={(newSettings) => {
-              // Handle the entire settings object being updated at once
-              for (const [key, value] of Object.entries(newSettings)) {
-                if (key in settings && settings[key as keyof SettingsState] !== value) {
-                  updateSetting(key as keyof SettingsState, value);
-                }
-              }
-            }}
-            onLogout={onLogout}
-          />
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Account Information</h2>
+            <p className="text-muted-foreground">
+              Name: {user.firstName} {user.lastName}<br />
+              Username: {user.username}<br />
+              Tech ID: {user.techId}
+            </p>
+            
+            <Button 
+              variant="destructive" 
+              className="w-full mt-4"
+              onClick={onLogout}
+            >
+              Sign Out
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
       
