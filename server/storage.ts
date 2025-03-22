@@ -429,7 +429,11 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      location: {},
+      techId: insertUser.techId || null,
+      location: {
+        latitude: null,
+        longitude: null
+      },
       inventory: {},
       settings: {
         darkMode: false,

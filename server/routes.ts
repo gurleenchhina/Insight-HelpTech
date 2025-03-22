@@ -8,6 +8,7 @@ import {
   pestProductResponseSchema, 
   pestCategoryResponseSchema,
   loginSchema,
+  signupSchema,
   updateLocationSchema,
   updateInventorySchema,
   updateSettingsSchema,
