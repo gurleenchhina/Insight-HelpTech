@@ -1,63 +1,130 @@
-
-import express from "express";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { createServer } from "http";
-import { WebSocketServer } from "ws";
+import type { Express, Request, Response } from "express";
+import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { 
+  recommendationsRequestSchema, 
+  aiSearchRequestSchema, 
+  aiImageSearchRequestSchema,
+  pestProductResponseSchema, 
+  pestCategoryResponseSchema
+} from "@shared/schema";
+import { processAISearch, processImageSearch } from "./lib/deepseekAI";
+import fs from "fs";
+import path from "path";
+import { ZodError } from "zod";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Root API endpoint
+  app.get("/api", (req: Request, res: Response) => {
+    res.json({ message: "HelpTech API" });
+  });
 
-export async function registerRoutes(app: express.Express) {
-  const server = createServer(app);
-  const wss = new WebSocketServer({ server });
-
-  app.get("/api/products", (_req, res) => {
+  // Get all pest categories
+  app.get("/api/pest-categories", async (req: Request, res: Response) => {
     try {
-      const products = storage.getAllProducts();
-      res.json(products);
+      const categories = await storage.getAllPestCategories();
+      res.json(categories.map(category => pestCategoryResponseSchema.parse(category)));
     } catch (error) {
-      console.error('Error fetching products:', error);
-      res.status(500).json({ error: 'Failed to fetch products' });
+      res.status(500).json({ message: "Failed to fetch pest categories", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
-  app.get("/api/categories", (_req, res) => {
+  // Get product recommendations by pest and location
+  app.post("/api/recommendations", async (req: Request, res: Response) => {
     try {
-      const categories = storage.getAllPestCategories();
-      res.json(categories);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      res.status(500).json({ error: 'Failed to fetch categories' });
-    }
-  });
-
-  app.get("/api/recommendations", (req, res) => {
-    try {
-      const { pest, location } = req.query;
-      if (!pest || !location) {
-        return res.status(400).json({ error: 'Missing pest or location parameter' });
+      const { pestCategory, location } = recommendationsRequestSchema.parse(req.body);
+      const recommendations = await storage.getRecommendationsByPestAndLocation(pestCategory, location);
+      
+      if (recommendations.length === 0) {
+        return res.status(404).json({ message: "No recommendations found for the specified pest and location" });
       }
-      const recommendations = storage.getRecommendationsByPestAndLocation(pest.toString(), location.toString());
-      res.json(recommendations);
+      
+      res.json(recommendations.map(product => pestProductResponseSchema.parse(product)));
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      res.status(500).json({ error: 'Failed to fetch recommendations' });
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to fetch recommendations", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
-  app.get("/api/labels/:name", (req, res) => {
-    const labelsDir = path.join(process.cwd(), 'attached_assets');
-    const files = fs.readdirSync(labelsDir);
-    const pdfFile = files.find(f => f.toLowerCase().includes(req.params.name.toLowerCase()));
+  // Process AI search query
+  app.post("/api/search", async (req: Request, res: Response) => {
+    try {
+      const { query } = aiSearchRequestSchema.parse(req.body);
+      
+      // Save the search query to history
+      await storage.addSearchQuery(query);
+      
+      // Process with DeepSeek AI
+      const result = await processAISearch(query);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Search processing failed", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  // Process image search
+  app.post("/api/image-search", async (req: Request, res: Response) => {
+    try {
+      const { image } = aiImageSearchRequestSchema.parse(req.body);
+      
+      // Process with DeepSeek AI
+      const result = await processImageSearch(image);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Image search processing failed", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  // Get recent searches
+  app.get("/api/recent-searches", async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const searches = await storage.getRecentSearches(limit);
+      res.json(searches);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch recent searches", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  // Serve product labels
+  app.get("/api/labels/:product", (req: Request, res: Response) => {
+    const product = req.params.product;
+    let filePath = "";
     
-    if (pdfFile) {
-      res.sendFile(path.join(labelsDir, pdfFile));
+    switch(product) {
+      case "seclira":
+        res.setHeader('Content-Type', 'application/pdf');
+        filePath = path.join(process.cwd(), 'attached_assets', 'Seclira WSG Label.pdf');
+        break;
+      case "suspend-polyzone":
+        res.setHeader('Content-Type', 'application/pdf');
+        filePath = path.join(process.cwd(), 'attached_assets', 'Suspend Polyzone Label.pdf');
+        break;
+      case "temprid-sc":
+        res.setHeader('Content-Type', 'application/pdf');
+        filePath = path.join(process.cwd(), 'attached_assets', 'Temprid SC Label.pdf');
+        break;
+      default:
+        return res.status(404).json({ message: "Label not found" });
+    }
+    
+    // Check if file exists
+    if (fs.existsSync(filePath)) {
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
     } else {
-      res.status(404).send('Label not found');
+      res.status(404).json({ message: "Label file not found" });
     }
   });
 
-  return server;
+  const httpServer = createServer(app);
+  return httpServer;
 }

@@ -34,7 +34,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       {/* Loading Screen */}
       <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
-
+      
       {/* Main App */}
       <div className={isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}>
         <Layout activeTab={activeTab} onTabChange={setActiveTab}>
