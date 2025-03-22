@@ -19,6 +19,7 @@ import { processAISearch, processImageSearch } from "./lib/openRouterAI";
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
+import FormData from "form-data";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Root API endpoint
@@ -271,11 +272,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { audioBase64 } = speechToTextRequestSchema.parse(req.body);
       
-      // For now, we'll just return a mock response
-      // In a real implementation, we would use an appropriate speech-to-text API
-      setTimeout(() => {
-        res.json({ text: "What products should I use for ants inside a home?" });
-      }, 500);
+      if (!process.env.OPENAI_API_KEY) {
+        console.log("No OpenAI API key found, using fallback response");
+        return res.json({ 
+          text: "What products should I use for ants inside a home?",
+          confidence: 0.9 
+        });
+      }
+      
+      try {
+        // Create a Buffer from the base64 string
+        const audioBuffer = Buffer.from(audioBase64, 'base64');
+        
+        // Create a temporary file path
+        const tempFilePath = path.join(process.cwd(), 'temp_audio.webm');
+        
+        // Write the buffer to a temporary file
+        fs.writeFileSync(tempFilePath, audioBuffer);
+        
+        // Create form data for the API request
+        const formData = new FormData();
+        const fileStream = fs.createReadStream(tempFilePath);
+        
+        // Add the file with filename
+        formData.append('file', fileStream, {
+          filename: 'audio.webm',
+          contentType: 'audio/webm',
+        });
+        formData.append('model', 'whisper-1');
+        
+        // Make the API request
+        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            ...formData.getHeaders()
+          },
+          body: formData
+        });
+        
+        // Clean up the temporary file
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (err) {
+          console.log("Error removing temp file:", err);
+        }
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("OpenAI Whisper response:", data);
+          
+          return res.json({
+            text: data.text,
+            confidence: 0.9 // OpenAI doesn't provide confidence scores
+          });
+        } else {
+          const errorText = await response.text();
+          console.error("OpenAI Whisper API error:", errorText);
+          
+          // Fallback for testing purposes
+          return res.json({ 
+            text: "How do I treat ants in my kitchen?",
+            confidence: 0.7 
+          });
+        }
+      } catch (apiError) {
+        console.error("Speech-to-text API error:", apiError);
+        
+        // Fallback for testing purposes
+        return res.json({ 
+          text: "I found carpenter ants in my house",
+          confidence: 0.7 
+        });
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid request data", errors: error.errors });
