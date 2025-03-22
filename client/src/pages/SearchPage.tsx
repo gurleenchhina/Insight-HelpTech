@@ -79,7 +79,7 @@ const SearchPage = () => {
               <p className="text-neutral-dark text-sm">Upload a photo of the pest for identification and treatment recommendations.</p>
             </div>
           </div>
-          <p className="text-center text-sm text-neutral-medium mt-6">Powered by DeepSeek AI with Ontario-compliant product data</p>
+          <p className="text-center text-sm text-neutral-medium mt-6">Powered by OpenAI with Ontario-compliant product data</p>
         </Card>
       )}
       

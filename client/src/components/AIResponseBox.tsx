@@ -17,7 +17,7 @@ const AIResponseBox = ({ response, onGetProducts }: AIResponseBoxProps) => {
           </div>
           <div>
             <h3 className="font-bold">AI Assistant</h3>
-            <p className="text-xs text-neutral-medium">Powered by DeepSeek AI</p>
+            <p className="text-xs text-neutral-medium">Powered by OpenAI</p>
           </div>
         </div>
       </CardHeader>
