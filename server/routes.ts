@@ -41,6 +41,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch pest categories", error: error instanceof Error ? error.message : String(error) });
     }
   });
+  
+  // Get product by name
+  app.get("/api/products/by-name/:productName", async (req: Request, res: Response) => {
+    try {
+      const { productName } = req.params;
+      const product = await storage.getProductByName(productName);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(pestProductResponseSchema.parse(product));
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch product", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
 
   // Get product recommendations by pest and location
   app.post("/api/recommendations", async (req: Request, res: Response) => {

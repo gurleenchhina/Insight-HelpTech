@@ -39,6 +39,7 @@ export interface IStorage {
   // Products
   getAllProducts(): Promise<Product[]>;
   getProductById(id: number): Promise<Product | undefined>;
+  getProductByName(name: string): Promise<Product | undefined>;
   
   // Pest Categories
   getAllPestCategories(): Promise<PestCategory[]>;
@@ -726,6 +727,17 @@ export class MemStorage implements IStorage {
   
   async getProductById(id: number): Promise<Product | undefined> {
     return this.products.get(id);
+  }
+  
+  async getProductByName(name: string): Promise<Product | undefined> {
+    // Case-insensitive search for product name
+    const searchNameLower = name.toLowerCase();
+    for (const [_, product] of this.products) {
+      if (product.name.toLowerCase().includes(searchNameLower)) {
+        return product;
+      }
+    }
+    return undefined;
   }
   
   // Pest Categories methods
