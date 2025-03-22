@@ -94,71 +94,12 @@ Respond in JSON format with these fields:
     }
 
     try {
-      // Clean up the content by removing LaTeX-style formatting and other symbols
-      let cleanedContent = content;
-      
-      // Remove LaTeX box formatting
-      cleanedContent = cleanedContent.replace(/\\boxed\s*\{\s*/g, '');
-      cleanedContent = cleanedContent.replace(/\}\s*$/g, '');
-      
-      // Remove other unnecessary symbols/characters
-      cleanedContent = cleanedContent.replace(/\\n/g, ' ');
-      cleanedContent = cleanedContent.replace(/\\/g, '');
-      cleanedContent = cleanedContent.replace(/`/g, '');
-      
-      // Attempt to parse the cleaned content
-      const parsedResponse = JSON.parse(cleanedContent) as AISearchResponse;
-      
-      // Further clean up individual response fields
-      if (parsedResponse.recommendation) {
-        parsedResponse.recommendation = parsedResponse.recommendation
-          .replace(/^\s*['"](.*)['"]\s*$/, '$1') // Remove quotes
-          .replace(/[{}[\]]/g, '') // Remove brackets
-          .trim();
-      }
-      
-      if (parsedResponse.applicationAdvice) {
-        parsedResponse.applicationAdvice = parsedResponse.applicationAdvice
-          .replace(/^\s*['"](.*)['"]\s*$/, '$1') // Remove quotes
-          .replace(/[{}[\]]/g, '') // Remove brackets
-          .trim();
-      }
-      
-      // Clean up product names if they exist
-      if (parsedResponse.products) {
-        if (parsedResponse.products.primary) {
-          parsedResponse.products.primary = parsedResponse.products.primary
-            .replace(/^\s*['"](.*)['"]\s*$/, '$1')
-            .replace(/[{}[\]]/g, '')
-            .trim();
-        }
-        
-        if (parsedResponse.products.alternative) {
-          parsedResponse.products.alternative = parsedResponse.products.alternative
-            .replace(/^\s*['"](.*)['"]\s*$/, '$1')
-            .replace(/[{}[\]]/g, '')
-            .trim();
-        }
-      }
-      
-      return parsedResponse;
+      return JSON.parse(content) as AISearchResponse;
     } catch (parseError) {
       console.error("Failed to parse JSON response:", parseError);
-      
-      // Clean up the raw content for a more readable non-JSON response
-      let cleanedText = content
-        .replace(/\\boxed\s*\{\s*/g, '')
-        .replace(/\}\s*$/g, '')
-        .replace(/\\n/g, ' ')
-        .replace(/\\/g, '')
-        .replace(/`/g, '')
-        .replace(/[{}[\]]/g, '')
-        .replace(/["']/g, '')
-        .trim();
-      
-      // If response isn't proper JSON, create a simple response with the cleaned text
+      // If response isn't proper JSON, create a simple response with the raw text
       return {
-        recommendation: cleanedText,
+        recommendation: content,
         pestType: "Unknown",
         products: {}
       };
@@ -249,71 +190,12 @@ Image information: ${imageDescription}`
     }
 
     try {
-      // Clean up the content by removing LaTeX-style formatting and other symbols
-      let cleanedContent = content;
-      
-      // Remove LaTeX box formatting
-      cleanedContent = cleanedContent.replace(/\\boxed\s*\{\s*/g, '');
-      cleanedContent = cleanedContent.replace(/\}\s*$/g, '');
-      
-      // Remove other unnecessary symbols/characters
-      cleanedContent = cleanedContent.replace(/\\n/g, ' ');
-      cleanedContent = cleanedContent.replace(/\\/g, '');
-      cleanedContent = cleanedContent.replace(/`/g, '');
-      
-      // Attempt to parse the cleaned content
-      const parsedResponse = JSON.parse(cleanedContent) as AISearchResponse;
-      
-      // Further clean up individual response fields
-      if (parsedResponse.recommendation) {
-        parsedResponse.recommendation = parsedResponse.recommendation
-          .replace(/^\s*['"](.*)['"]\s*$/, '$1') // Remove quotes
-          .replace(/[{}[\]]/g, '') // Remove brackets
-          .trim();
-      }
-      
-      if (parsedResponse.applicationAdvice) {
-        parsedResponse.applicationAdvice = parsedResponse.applicationAdvice
-          .replace(/^\s*['"](.*)['"]\s*$/, '$1') // Remove quotes
-          .replace(/[{}[\]]/g, '') // Remove brackets
-          .trim();
-      }
-      
-      // Clean up product names if they exist
-      if (parsedResponse.products) {
-        if (parsedResponse.products.primary) {
-          parsedResponse.products.primary = parsedResponse.products.primary
-            .replace(/^\s*['"](.*)['"]\s*$/, '$1')
-            .replace(/[{}[\]]/g, '')
-            .trim();
-        }
-        
-        if (parsedResponse.products.alternative) {
-          parsedResponse.products.alternative = parsedResponse.products.alternative
-            .replace(/^\s*['"](.*)['"]\s*$/, '$1')
-            .replace(/[{}[\]]/g, '')
-            .trim();
-        }
-      }
-      
-      return parsedResponse;
+      return JSON.parse(content) as AISearchResponse;
     } catch (parseError) {
       console.error("Failed to parse JSON response:", parseError);
-      
-      // Clean up the raw content for a more readable non-JSON response
-      let cleanedText = content
-        .replace(/\\boxed\s*\{\s*/g, '')
-        .replace(/\}\s*$/g, '')
-        .replace(/\\n/g, ' ')
-        .replace(/\\/g, '')
-        .replace(/`/g, '')
-        .replace(/[{}[\]]/g, '')
-        .replace(/["']/g, '')
-        .trim();
-      
-      // If response isn't proper JSON, create a simple response with the cleaned text
+      // If response isn't proper JSON, create a simple response with the raw text
       return {
-        recommendation: cleanedText,
+        recommendation: content,
         pestType: "Unknown",
         products: {}
       };
