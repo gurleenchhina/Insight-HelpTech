@@ -213,69 +213,66 @@ const SearchInterface = ({ onSearch, onImageSearch }: SearchInterfaceProps) => {
   }, []);
 
   return (
-    <Card className="mb-6 shadow-none border-0">
-      <form onSubmit={handleSubmit}>
-        <div className="relative">
-          <Input 
-            type="text" 
-            placeholder={placeholders[placeholderIndex]} 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-white py-3 px-4 pr-10 rounded-lg shadow-sm border-0 focus:ring-2 focus:ring-primary"
-          />
-          <div className="absolute right-0 top-0 h-full flex items-center pr-3">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="icon" 
-              className={`text-neutral-medium hover:text-primary ${isRecording ? 'text-red-500' : ''}`}
-              onMouseDown={startRecording}
-              onMouseUp={stopRecording}
-              onTouchStart={startRecording}
-              onTouchEnd={stopRecording}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Mic className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
-        </div>
-        <div className="flex justify-center mt-3">
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold text-gradient bg-gradient-to-r from-green-500 to-blue-500 inline-block text-transparent bg-clip-text">
+          {placeholders[placeholderIndex]}
+        </h1>
+      </div>
+      <div className="relative w-full">
+        <Input 
+          type="text" 
+          placeholder="Search pest control products and solutions..." 
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-full py-6 px-6 pr-12 rounded-xl shadow-md border border-gray-200 focus:ring-2 focus:ring-primary text-lg"
+        />
+        <div className="absolute right-0 top-0 h-full flex items-center pr-3">
           <Button 
-            type="submit"
-            className="bg-primary text-white px-5 py-2 rounded-lg shadow hover:bg-primary-dark mr-2"
-            disabled={!query.trim() || isProcessing}
-          >
-            <span className="flex items-center">
-              <span className="material-icons mr-1">search</span>
-              Search
-            </span>
-          </Button>
-          <Button 
-            type="button"
-            variant="outline"
-            className="bg-white text-neutral-dark px-5 py-2 rounded-lg shadow hover:bg-neutral-lightest border border-neutral-light"
-            onClick={triggerFileInput}
+            type="button" 
+            variant="ghost" 
+            size="icon" 
+            className={`text-neutral-medium hover:text-primary ${isRecording ? 'text-red-500' : ''}`}
+            onMouseDown={startRecording}
+            onMouseUp={stopRecording}
+            onTouchStart={startRecording}
+            onTouchEnd={stopRecording}
             disabled={isProcessing}
           >
-            <span className="flex items-center">
-              <span className="material-icons mr-1">photo_camera</span>
-              Image
-            </span>
+            {isProcessing ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <Mic className="h-6 w-6" />
+            )}
           </Button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            accept="image/*" 
-            onChange={handleImageUpload} 
-            className="hidden" 
-          />
         </div>
-      </form>
-    </Card>
+      </div>
+      <div className="flex justify-center gap-4 mt-6">
+        <Button 
+          type="submit"
+          className="bg-primary text-white px-6 py-5 rounded-lg shadow-md hover:bg-primary-dark transition-colors text-base"
+          disabled={!query.trim() || isProcessing}
+        >
+          Search
+        </Button>
+        <Button 
+          type="button"
+          variant="outline"
+          className="bg-white px-6 py-5 rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 text-base"
+          onClick={triggerFileInput}
+          disabled={isProcessing}
+        >
+          Upload Image
+        </Button>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          accept="image/*" 
+          onChange={handleImageUpload} 
+          className="hidden" 
+        />
+      </div>
+    </form>
   );
 };
 

@@ -44,37 +44,23 @@ const RecentSearches = ({ onSearchSelect, getRecentSearches }: RecentSearchesPro
   }
 
   if (searches.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <h3 className="font-condensed font-bold text-lg">Recent Searches</h3>
-        </CardHeader>
-        <CardContent>
-          <p className="text-neutral-medium text-center py-4">No recent searches</p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (
-    <div>
-      <h3 className="font-condensed font-bold text-lg mb-3">Recent Searches</h3>
-      <Card className="bg-white rounded-lg shadow-md">
-        <CardContent className="p-0">
-          <ul className="divide-y divide-neutral-light">
-            {searches.map((search) => (
-              <li 
-                key={search.id} 
-                className="px-4 py-3 flex items-center hover:bg-neutral-lightest cursor-pointer"
-                onClick={() => onSearchSelect(search.query)}
-              >
-                <span className="material-icons text-neutral-medium mr-3">history</span>
-                <span>{search.query}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+    <div className="mt-8 max-w-xl mx-auto">
+      <h3 className="text-sm text-neutral-500 uppercase tracking-wide font-medium mb-3 text-center">Recent Searches</h3>
+      <div className="flex flex-wrap gap-2 justify-center">
+        {searches.map((search) => (
+          <button 
+            key={search.id} 
+            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-colors"
+            onClick={() => onSearchSelect(search.query)}
+          >
+            {search.query}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
