@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Process AI search query
+  // Process AI search query with enhanced product knowledge
   app.post("/api/search", async (req: Request, res: Response) => {
     try {
       const { query } = aiSearchRequestSchema.parse(req.body);
@@ -64,8 +64,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save the search query to history
       await storage.addSearchQuery(query);
       
+      // Get all pest categories and products to enhance AI context
+      const pestCategories = await storage.getAllPestCategories();
+      const products = await storage.getAllProducts();
+      
+      // Create an enhanced context for the AI with our product database
+      const enhancedQuery = {
+        userQuery: query,
+        pestCategories: pestCategories.map(cat => cat.name),
+        products: products.map(product => ({
+          name: product.name,
+          activeIngredient: product.activeIngredient,
+          safetyInfo: product.safetyPrecautions,
+          applicationRate: product.applicationRate,
+          requiresVacancy: product.requiresVacancy
+        }))
+      };
+      
       // Process with DeepSeek AI
-      const result = await processDeepSeekSearch(query);
+      const result = await processDeepSeekSearch(JSON.stringify(enhancedQuery));
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -75,13 +92,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Process image search
+  // Process image search with enhanced product knowledge
   app.post("/api/image-search", async (req: Request, res: Response) => {
     try {
       const { image } = aiImageSearchRequestSchema.parse(req.body);
       
+      // Get all pest categories and products to enhance AI context
+      const pestCategories = await storage.getAllPestCategories();
+      const products = await storage.getAllProducts();
+      
+      // Enhanced product information will be used for analysis after pest identification
+      
+      // Create enhanced context for the AI
+      const enhancedContext = {
+        pestCategories: pestCategories.map(cat => cat.name),
+        products: products.map(product => ({
+          name: product.name,
+          activeIngredient: product.activeIngredient,
+          safetyInfo: product.safetyPrecautions,
+          applicationRate: product.applicationRate,
+          requiresVacancy: product.requiresVacancy
+        }))
+      };
+      
       // Process with DeepSeek AI
-      const result = await processDeepSeekImageSearch(image);
+      const result = await processDeepSeekImageSearch(image, JSON.stringify(enhancedContext));
+      
+      // Add search query to history based on the identified pest type
+      if (result?.pestType && result.pestType !== "Unknown") {
+        await storage.addSearchQuery(`Image search: ${result.pestType}`);
+      }
+      
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
