@@ -2,10 +2,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import pdfParse from 'pdf-parse';
 
-// Override pdf-parse's default test file requirement
-(pdfParse as any).skip_test = true;
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
