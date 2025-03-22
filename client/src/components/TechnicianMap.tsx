@@ -35,10 +35,15 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
-        const response = await apiRequest({ url: '/api/maps-api-key' });
+        const response = await fetch('/api/maps-api-key');
         if (response.ok) {
           const data = await response.json();
-          setGoogleMapsApiKey(data.apiKey);
+          if (data.apiKey) {
+            setGoogleMapsApiKey(data.apiKey);
+            console.log("Successfully loaded Google Maps API key");
+          } else {
+            console.error('Google Maps API key is empty or undefined');
+          }
         } else {
           console.error('Failed to fetch Google Maps API key');
         }
@@ -59,37 +64,68 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
 
   // Define the calculateDistances function first
   const calculateDistances = async () => {
-    if (!window.google || !window.google.maps || technicians.length === 0) return;
+    if (!window.google || !window.google.maps || technicians.length === 0) {
+      console.log("Unable to calculate distances: Google Maps not loaded or no technicians available");
+      // Still set the technicians to display them without distance info
+      setTechsWithDistance(technicians);
+      return;
+    }
 
-    const service = new google.maps.DistanceMatrixService();
-    const origin = new google.maps.LatLng(userLocation.latitude, userLocation.longitude);
-    
-    const destinations = technicians.map(tech => {
-      const location = tech.location as { latitude: number, longitude: number };
-      return new google.maps.LatLng(location.latitude, location.longitude);
-    });
-
-    service.getDistanceMatrix(
-      {
-        origins: [origin],
-        destinations,
-        travelMode: google.maps.TravelMode.DRIVING,
-        unitSystem: google.maps.UnitSystem.METRIC,
-      },
-      (response, status) => {
-        if (status === 'OK' && response) {
-          const techsWithDistanceInfo = technicians.map((tech, index) => {
-            const result = response.rows[0].elements[index];
-            return {
-              ...tech,
-              distance: result.distance ? result.distance.value / 1000 : undefined, // km
-              travelTime: result.duration ? result.duration.text : undefined
-            };
-          });
-          setTechsWithDistance(techsWithDistanceInfo);
+    try {
+      const service = new google.maps.DistanceMatrixService();
+      const origin = new google.maps.LatLng(userLocation.latitude, userLocation.longitude);
+      
+      const destinations = technicians.map(tech => {
+        const location = tech.location as { latitude: number, longitude: number };
+        if (!location.latitude || !location.longitude) {
+          console.warn(`Invalid location for technician ${tech.id}`);
+          return new google.maps.LatLng(userLocation.latitude, userLocation.longitude);
         }
-      }
-    );
+        return new google.maps.LatLng(location.latitude, location.longitude);
+      });
+
+      service.getDistanceMatrix(
+        {
+          origins: [origin],
+          destinations,
+          travelMode: google.maps.TravelMode.DRIVING,
+          unitSystem: google.maps.UnitSystem.METRIC,
+        },
+        (response, status) => {
+          if (status === 'OK' && response) {
+            console.log("Distance matrix response:", response);
+            const techsWithDistanceInfo = technicians.map((tech, index) => {
+              if (!response.rows[0] || !response.rows[0].elements[index]) {
+                console.warn(`No distance data for technician ${tech.id}`);
+                return tech;
+              }
+              
+              const result = response.rows[0].elements[index];
+              
+              if (result.status !== 'OK') {
+                console.warn(`Distance calculation failed for technician ${tech.id}: ${result.status}`);
+                return tech;
+              }
+              
+              return {
+                ...tech,
+                distance: result.distance ? result.distance.value / 1000 : undefined, // km
+                travelTime: result.duration ? result.duration.text : undefined
+              };
+            });
+            setTechsWithDistance(techsWithDistanceInfo);
+          } else {
+            console.error(`Distance matrix service failed: ${status}`);
+            // Still set technicians to display them without distance info
+            setTechsWithDistance(technicians);
+          }
+        }
+      );
+    } catch (error) {
+      console.error("Error calculating distances:", error);
+      // Still set technicians to display them without distance info
+      setTechsWithDistance(technicians);
+    }
   };
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
@@ -137,12 +173,22 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
             {/* Technician markers */}
             {technicians.map((tech) => {
               const location = tech.location as { latitude: number, longitude: number };
+              
+              // Skip technicians with invalid location data
+              if (!location || !location.latitude || !location.longitude) {
+                console.warn(`Skipping marker for technician ${tech.id} due to invalid location data`);
+                return null;
+              }
+              
               return (
                 <Marker
                   key={tech.id}
                   position={{
                     lat: location.latitude,
                     lng: location.longitude
+                  }}
+                  icon={{
+                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
                   }}
                   onClick={() => {
                     const techWithDistance = techsWithDistance.find(t => t.id === tech.id) || tech;
@@ -153,7 +199,10 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
             })}
             
             {/* Info window for selected technician */}
-            {selectedTechnician && (
+            {selectedTechnician && 
+             selectedTechnician.location && 
+             (selectedTechnician.location as any).latitude && 
+             (selectedTechnician.location as any).longitude && (
               <InfoWindow
                 position={{
                   lat: (selectedTechnician.location as any).latitude,
@@ -165,7 +214,10 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
                   <h3 className="font-bold">{selectedTechnician.firstName} {selectedTechnician.lastName}</h3>
                   <div className="text-sm mt-1">
                     <div className="flex items-center gap-1">
-                      <Phone size={14} /> ID: {selectedTechnician.techId}
+                      <Phone size={14} /> Tech ID: {selectedTechnician.techId}
+                    </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Phone size={14} /> Username: {selectedTechnician.username}
                     </div>
                     {selectedTechnician.distance && (
                       <div className="flex items-center gap-1 mt-1">
@@ -198,7 +250,10 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
               <h3 className="font-bold">{tech.firstName} {tech.lastName}</h3>
               <div className="text-sm mt-2 space-y-1">
                 <div className="flex items-center gap-1">
-                  <Phone size={14} /> ID: {tech.techId}
+                  <Phone size={14} /> Tech ID: {tech.techId}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Phone size={14} /> Username: {tech.username}
                 </div>
                 {tech.distance && (
                   <div className="flex items-center gap-1">
