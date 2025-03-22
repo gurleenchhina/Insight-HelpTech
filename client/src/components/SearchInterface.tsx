@@ -23,7 +23,7 @@ const SearchInterface = ({ onSearch, onImageSearch }: SearchInterfaceProps) => {
   
   const placeholders = [
     "what's bugging you?",
-    "give service manager a break"
+    "Give service manager a break!"
   ];
 
   // Rotate placeholders periodically

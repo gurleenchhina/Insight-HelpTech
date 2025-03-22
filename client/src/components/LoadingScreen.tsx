@@ -51,7 +51,7 @@ const LoadingScreen = ({ onLoadingComplete, className }: LoadingScreenProps) => 
         
         {/* Tagline at bottom */}
         <div className="text-sm font-light text-neutral-600">
-          By the technician for the technicians
+          By & For Technicians
         </div>
       </div>
     </div>
