@@ -12,11 +12,28 @@ import {
   type SearchHistoryItem
 } from "@shared/schema";
 
+// Type definition for user settings
+export interface UserSettings {
+  darkMode: boolean;
+  brightness: number;
+  safetyAlerts: boolean;
+  ppeReminders: boolean;
+  textSize: number;
+}
+
 // Storage interface definition
 export interface IStorage {
+  // User Management
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByTechId(techId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  authenticateUser(techId: string, pin: string): Promise<User | null>;
+  updateUserLocation(userId: number, latitude: number, longitude: number): Promise<User>;
+  updateUserInventory(userId: number, productId: number, quantity: number): Promise<User>;
+  updateUserSettings(userId: number, settings: Partial<UserSettings>): Promise<User>;
+  getUsersWithProductInInventory(productId: number): Promise<User[]>;
+  getNearbyTechnicians(productId: number, latitude: number, longitude: number, radiusKm: number): Promise<User[]>;
   
   // Products
   getAllProducts(): Promise<Product[]>;
@@ -366,11 +383,160 @@ export class MemStorage implements IStorage {
     );
   }
   
+  async getUserByTechId(techId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.techId === techId,
+    );
+  }
+  
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const timestamp = new Date().toISOString();
+    
+    const user: User = { 
+      ...insertUser, 
+      id,
+      location: {},
+      inventory: {},
+      settings: {
+        darkMode: false,
+        brightness: 100,
+        safetyAlerts: true,
+        ppeReminders: true,
+        textSize: 16
+      },
+      lastActive: timestamp
+    };
+    
     this.users.set(id, user);
     return user;
+  }
+  
+  async authenticateUser(techId: string, pin: string): Promise<User | null> {
+    const user = await this.getUserByTechId(techId);
+    if (!user || user.pin !== pin) {
+      return null;
+    }
+    
+    // Update last active timestamp
+    const updatedUser = { 
+      ...user, 
+      lastActive: new Date().toISOString() 
+    };
+    this.users.set(user.id, updatedUser);
+    
+    return updatedUser;
+  }
+  
+  async updateUserLocation(userId: number, latitude: number, longitude: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    const updatedUser = {
+      ...user,
+      location: { latitude, longitude },
+      lastActive: new Date().toISOString()
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserInventory(userId: number, productId: number, quantity: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    const product = await this.getProductById(productId);
+    if (!product) {
+      throw new Error(`Product with ID ${productId} not found`);
+    }
+    
+    const inventory = { ...user.inventory as Record<string, number> };
+    inventory[productId.toString()] = quantity;
+    
+    const updatedUser = {
+      ...user,
+      inventory,
+      lastActive: new Date().toISOString()
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserSettings(userId: number, settings: Partial<UserSettings>): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    const updatedSettings = {
+      ...user.settings as UserSettings,
+      ...settings
+    };
+    
+    const updatedUser = {
+      ...user,
+      settings: updatedSettings,
+      lastActive: new Date().toISOString()
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async getUsersWithProductInInventory(productId: number): Promise<User[]> {
+    const product = await this.getProductById(productId);
+    if (!product) {
+      throw new Error(`Product with ID ${productId} not found`);
+    }
+    
+    return Array.from(this.users.values()).filter(user => {
+      const inventory = user.inventory as Record<string, number>;
+      return inventory[productId.toString()] && inventory[productId.toString()] > 0;
+    });
+  }
+  
+  // Calculate distance between two points in kilometers using Haversine formula
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Radius of the earth in km
+    const dLat = this.deg2rad(lat2 - lat1);
+    const dLon = this.deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  }
+  
+  private deg2rad(deg: number): number {
+    return deg * (Math.PI / 180);
+  }
+  
+  async getNearbyTechnicians(productId: number, latitude: number, longitude: number, radiusKm: number): Promise<User[]> {
+    const techsWithProduct = await this.getUsersWithProductInInventory(productId);
+    
+    return techsWithProduct.filter(user => {
+      const userLocation = user.location as { latitude?: number; longitude?: number };
+      if (!userLocation.latitude || !userLocation.longitude) {
+        return false;
+      }
+      
+      const distance = this.calculateDistance(
+        latitude,
+        longitude,
+        userLocation.latitude,
+        userLocation.longitude
+      );
+      
+      return distance <= radiusKm;
+    });
   }
   
   // Products methods
