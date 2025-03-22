@@ -2,6 +2,7 @@ import { Container } from "@/components/ui/container";
 import SettingsSection from "@/components/SettingsSection";
 import SettingsPanel from "@/components/SettingsPanel";
 import InventoryCheck from "@/components/InventoryCheck";
+import PermissionsManager from "@/components/PermissionsManager";
 import { SettingsState, User } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,9 +62,10 @@ const SettingsPage = ({ settings, updateSetting, user, onLogout, onInventoryUpda
       </div>
       
       <Tabs defaultValue="appearance" value={activeSettingsTab} onValueChange={setActiveSettingsTab}>
-        <TabsList className="grid w-full grid-cols-3 mb-6">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
         
@@ -77,6 +79,19 @@ const SettingsPage = ({ settings, updateSetting, user, onLogout, onInventoryUpda
             inventory={user.inventory || {}} 
             products={products}
             onInventoryUpdate={onInventoryUpdate}
+          />
+        </TabsContent>
+        
+        <TabsContent value="permissions" className="space-y-4">
+          <PermissionsManager 
+            onPermissionChange={(type, status) => {
+              // We could save these permissions to the user's settings
+              // or just handle them locally
+              toast({
+                title: `${type.charAt(0).toUpperCase() + type.slice(1)} Permission`,
+                description: `Status changed to: ${status}`,
+              });
+            }}
           />
         </TabsContent>
         
