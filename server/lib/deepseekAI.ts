@@ -21,8 +21,9 @@ interface ApiResponse {
 }
 
 // API configuration for OpenRouter
-const API_KEY = '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';
-const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+// Using environment variable if available, fallback to the hardcoded key
+const API_KEY = process.env.OPENAI_API_KEY || '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';
+const API_URL = 'https://api.openai.com/v1/chat/completions'; // Using OpenAI API directly
 
 // Additional headers required by OpenRouter
 const SITE_URL = 'https://helptech.replit.app';
@@ -99,7 +100,7 @@ Respond in JSON format with these fields:
         'X-Title': SITE_NAME
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1-zero:free',
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: 'system',
@@ -109,7 +110,8 @@ Respond in JSON format with these fields:
             role: 'user',
             content: userQuery
           }
-        ]
+        ],
+        response_format: { type: "json_object" }
       })
     });
 
@@ -221,7 +223,7 @@ Please identify what kind of pest this might be based on common pest control iss
         'X-Title': SITE_NAME
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1-zero:free',
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           {
             role: 'system',
@@ -229,11 +231,21 @@ Please identify what kind of pest this might be based on common pest control iss
           },
           {
             role: 'user',
-            content: `Please identify this pest and recommend appropriate treatment products according to Ontario regulations. I found this pest in my home.
-
-Image information: ${imageDescription}`
+            content: [
+              {
+                type: "text",
+                text: "Please identify this pest and recommend appropriate treatment products according to Ontario regulations. I found this pest in my home."
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`
+                }
+              }
+            ]
           }
-        ]
+        ],
+        response_format: { type: "json_object" }
       })
     });
 

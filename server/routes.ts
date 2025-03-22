@@ -15,8 +15,7 @@ import {
   nearbyTechRequestSchema,
   speechToTextRequestSchema
 } from "@shared/schema";
-import { processTextSearch, processImageSearch } from "./lib/openai";
-import { processAISearch as processDeepSeekSearch, processImageSearch as processDeepSeekImageSearch } from "./lib/deepseekAI";
+import { processAISearch, processImageSearch } from "./lib/openai";
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
@@ -81,8 +80,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }))
       };
       
-      // Process with DeepSeek AI
-      const result = await processDeepSeekSearch(JSON.stringify(enhancedQuery));
+      // Process with OpenAI
+      const result = await processAISearch(JSON.stringify(enhancedQuery));
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -115,8 +114,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }))
       };
       
-      // Process with DeepSeek AI
-      const result = await processDeepSeekImageSearch(image, JSON.stringify(enhancedContext));
+      // Process with OpenAI
+      const result = await processImageSearch(image, JSON.stringify(enhancedContext));
       
       // Add search query to history based on the identified pest type
       if (result?.pestType && result.pestType !== "Unknown") {
