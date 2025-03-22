@@ -59,8 +59,9 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
 
     // Sort by distance
     techsWithDistanceCalc.sort((a, b) => {
-      const distA = a.distance || Infinity;
-      const distB = b.distance || Infinity;
+      // Type-safe comparison with explicit type casting
+      const distA = (a as TechnicianWithDistance).distance ?? Infinity;
+      const distB = (b as TechnicianWithDistance).distance ?? Infinity;
       return distA - distB;
     });
 

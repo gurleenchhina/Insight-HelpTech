@@ -11,6 +11,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import Layout from "@/components/Layout";
 import LoadingScreen from '@/components/LoadingScreen';
 import UserAuth from '@/components/UserAuth';
+import LocationTracker from '@/components/LocationTracker';
 import { SettingsState, User } from '@/lib/types';
 
 function App() {

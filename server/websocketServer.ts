@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import { WebSocketServer } from 'ws';
 import { Server } from 'http';
 import { storage } from './storage';
 import { log } from './vite';
@@ -23,22 +23,27 @@ interface WebSocketMessage {
 
 // Create WebSocket server
 export function setupWebSocketServer(httpServer: Server) {
-  const wss = new WebSocket.Server({ server: httpServer });
+  // Use a specific path for our WebSocket server to avoid conflicts with Vite WebSocket
+  const wss = new WebSocketServer({ 
+    server: httpServer,
+    path: '/api/ws/location'
+  });
   
   log(`WebSocket server initialized`, 'websocket');
   
   // Store client connections mapped to user IDs
-  const clients = new Map<number, WebSocket>();
+  const clients = new Map();
 
-  wss.on('connection', (ws: WebSocket) => {
-    let userId: number | null = null;
+  wss.on('connection', (ws) => {
+    let userId = null;
     
     log(`New WebSocket connection established`, 'websocket');
     
     // Handle incoming messages
-    ws.on('message', async (message: string) => {
+    ws.on('message', async (messageData) => {
       try {
-        const parsedMessage = JSON.parse(message) as WebSocketMessage;
+        const messageStr = messageData.toString();
+        const parsedMessage = JSON.parse(messageStr);
         
         // Handle different message types
         if (parsedMessage.type === 'location-update' && parsedMessage.userId) {
@@ -46,7 +51,7 @@ export function setupWebSocketServer(httpServer: Server) {
           clients.set(userId, ws);
           
           // Extract location data
-          const locationData = parsedMessage.data as LocationUpdate;
+          const locationData = parsedMessage.data;
           
           // Update user location in storage
           await storage.updateUserLocation(
@@ -93,16 +98,16 @@ export function setupWebSocketServer(httpServer: Server) {
   });
   
   // Broadcast location update to all connected clients
-  function broadcastLocationUpdate(locationUpdate: LocationUpdate) {
-    const message: WebSocketMessage = {
+  function broadcastLocationUpdate(locationUpdate) {
+    const message = {
       type: 'location-update',
       data: locationUpdate
     };
     
     const messageStr = JSON.stringify(message);
     
-    clients.forEach((client, clientUserId) => {
-      if (client.readyState === WebSocket.OPEN) {
+    clients.forEach((client) => {
+      if (client.readyState === 1) { // WebSocket.OPEN = 1
         client.send(messageStr);
       }
     });
