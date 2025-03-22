@@ -214,15 +214,10 @@ const SearchInterface = ({ onSearch, onImageSearch }: SearchInterfaceProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gradient bg-gradient-to-r from-green-500 to-blue-500 inline-block text-transparent bg-clip-text">
-          {placeholders[placeholderIndex]}
-        </h1>
-      </div>
       <div className="relative w-full">
         <Input 
           type="text" 
-          placeholder="Search pest control products and solutions..." 
+          placeholder={placeholders[placeholderIndex]} 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full py-6 px-6 pr-12 rounded-xl shadow-md border border-gray-200 focus:ring-2 focus:ring-primary text-lg"
