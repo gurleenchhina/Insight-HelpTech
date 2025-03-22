@@ -83,9 +83,11 @@ export class MemStorage implements IStorage {
   }
   
   private initializeTestUsers() {
-    // Add a test user for development
+    // Add test users for development
     const timestamp = new Date().toISOString();
-    const testUser = {
+    
+    // First test user (current user)
+    const testUser1 = {
       id: this.currentUserId++,
       techId: "1234",
       pin: "5678",
@@ -99,7 +101,8 @@ export class MemStorage implements IStorage {
       inventory: {
         "1": 5,  // 5 units of SECLIRA WSG
         "4": 3,  // 3 units of Suspend Polyzone
-        "7": 2   // 2 units of KONK 407
+        "7": 2,   // 2 units of KONK 407
+        "10": 2  // 2 units of Demand CS
       },
       settings: {
         darkMode: false,
@@ -111,7 +114,36 @@ export class MemStorage implements IStorage {
       lastActive: timestamp
     };
     
-    this.users.set(testUser.id, testUser);
+    // Second test user (nearby technician)
+    const testUser2 = {
+      id: this.currentUserId++,
+      techId: "5678",
+      pin: "1234",
+      username: "jsmith2",
+      firstName: "John",
+      lastName: "Smith 2",
+      location: {
+        latitude: 43.6832,  // 3km away from first user
+        longitude: -79.3732
+      },
+      inventory: {
+        "1": 2,  // 2 units of SECLIRA WSG
+        "4": 1,  // 1 unit of Suspend Polyzone
+        "10": 4, // 4 units of Demand CS
+        "11": 6  // 6 units of Glue Traps
+      },
+      settings: {
+        darkMode: true,
+        brightness: 80,
+        safetyAlerts: true,
+        ppeReminders: true,
+        textSize: 16
+      },
+      lastActive: timestamp
+    };
+    
+    this.users.set(testUser1.id, testUser1);
+    this.users.set(testUser2.id, testUser2);
   }
   
   private initializeData() {

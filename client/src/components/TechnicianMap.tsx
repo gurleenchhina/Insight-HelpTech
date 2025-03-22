@@ -1,16 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import React, { useEffect, useState } from 'react';
 import { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Clock } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
-
-const containerStyle = {
-  width: '100%',
-  height: '400px'
-};
+import { Phone, MapPin, Clock, UserRound, PackageCheck, CircleUser } from 'lucide-react';
 
 interface TechnicianMapProps {
   technicians: User[];
@@ -29,223 +21,177 @@ interface TechnicianWithDistance extends User {
 const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, userLocation }) => {
   const [selectedTechnician, setSelectedTechnician] = useState<TechnicianWithDistance | null>(null);
   const [techsWithDistance, setTechsWithDistance] = useState<TechnicianWithDistance[]>([]);
-  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
-  
-  // Fetch Google Maps API key from backend
+
   useEffect(() => {
-    const fetchApiKey = async () => {
-      try {
-        const response = await fetch('/api/maps-api-key');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.apiKey) {
-            setGoogleMapsApiKey(data.apiKey);
-            console.log("Successfully loaded Google Maps API key");
-          } else {
-            console.error('Google Maps API key is empty or undefined');
-          }
-        } else {
-          console.error('Failed to fetch Google Maps API key');
-        }
-      } catch (error) {
-        console.error('Error fetching Google Maps API key:', error);
+    // Calculate distances between user and technicians
+    const techsWithDistanceCalc = technicians.map(tech => {
+      const techLocation = tech.location as { latitude: number, longitude: number };
+      if (!techLocation || !techLocation.latitude || !techLocation.longitude) {
+        return { ...tech };
       }
-    };
-    
-    fetchApiKey();
-  }, []);
-  
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: googleMapsApiKey
-  });
 
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-
-  // Define the calculateDistances function first
-  const calculateDistances = async () => {
-    if (!window.google || !window.google.maps || technicians.length === 0) {
-      console.log("Unable to calculate distances: Google Maps not loaded or no technicians available");
-      // Still set the technicians to display them without distance info
-      setTechsWithDistance(technicians);
-      return;
-    }
-
-    try {
-      const service = new google.maps.DistanceMatrixService();
-      const origin = new google.maps.LatLng(userLocation.latitude, userLocation.longitude);
-      
-      const destinations = technicians.map(tech => {
-        const location = tech.location as { latitude: number, longitude: number };
-        if (!location.latitude || !location.longitude) {
-          console.warn(`Invalid location for technician ${tech.id}`);
-          return new google.maps.LatLng(userLocation.latitude, userLocation.longitude);
-        }
-        return new google.maps.LatLng(location.latitude, location.longitude);
-      });
-
-      service.getDistanceMatrix(
-        {
-          origins: [origin],
-          destinations,
-          travelMode: google.maps.TravelMode.DRIVING,
-          unitSystem: google.maps.UnitSystem.METRIC,
-        },
-        (response, status) => {
-          if (status === 'OK' && response) {
-            console.log("Distance matrix response:", response);
-            const techsWithDistanceInfo = technicians.map((tech, index) => {
-              if (!response.rows[0] || !response.rows[0].elements[index]) {
-                console.warn(`No distance data for technician ${tech.id}`);
-                return tech;
-              }
-              
-              const result = response.rows[0].elements[index];
-              
-              if (result.status !== 'OK') {
-                console.warn(`Distance calculation failed for technician ${tech.id}: ${result.status}`);
-                return tech;
-              }
-              
-              return {
-                ...tech,
-                distance: result.distance ? result.distance.value / 1000 : undefined, // km
-                travelTime: result.duration ? result.duration.text : undefined
-              };
-            });
-            setTechsWithDistance(techsWithDistanceInfo);
-          } else {
-            console.error(`Distance matrix service failed: ${status}`);
-            // Still set technicians to display them without distance info
-            setTechsWithDistance(technicians);
-          }
-        }
+      // Simple distance calculation (as the crow flies)
+      const distance = calculateDistance(
+        userLocation.latitude,
+        userLocation.longitude,
+        techLocation.latitude,
+        techLocation.longitude
       );
-    } catch (error) {
-      console.error("Error calculating distances:", error);
-      // Still set technicians to display them without distance info
-      setTechsWithDistance(technicians);
-    }
-  };
 
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
-    calculateDistances();
+      // Estimate travel time (very rough estimate: 50 km/h average speed)
+      const estimatedMinutes = Math.round(distance * 60 / 50);
+      let travelTime;
+      
+      if (estimatedMinutes < 60) {
+        travelTime = `${estimatedMinutes} min`;
+      } else {
+        const hours = Math.floor(estimatedMinutes / 60);
+        const minutes = estimatedMinutes % 60;
+        travelTime = `${hours} hr${hours > 1 ? 's' : ''} ${minutes} min`;
+      }
+
+      return {
+        ...tech,
+        distance,
+        travelTime
+      };
+    });
+
+    // Sort by distance
+    techsWithDistanceCalc.sort((a, b) => {
+      const distA = a.distance || Infinity;
+      const distB = b.distance || Infinity;
+      return distA - distB;
+    });
+
+    setTechsWithDistance(techsWithDistanceCalc);
   }, [technicians, userLocation]);
 
-  const onUnmount = useCallback(() => {
-    setMap(null);
-  }, []);
-
-  const center = {
-    lat: userLocation.latitude,
-    lng: userLocation.longitude
+  // Haversine formula for calculating distance between two points on Earth
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return Math.round(distance * 10) / 10; // Round to 1 decimal place
   };
 
-  if (!isLoaded) {
-    return <div>Loading map...</div>;
-  }
+  const deg2rad = (deg: number): number => {
+    return deg * (Math.PI / 180);
+  };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            Nearby Technicians with Required Product
-          </CardTitle>
+          <CardTitle>Nearby Technicians</CardTitle>
         </CardHeader>
         <CardContent>
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={10}
-            onLoad={onMapLoad}
-            onUnmount={onUnmount}
-          >
-            {/* User location marker */}
-            <Marker
-              position={center}
-              icon={{
-                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-              }}
-            />
-            
-            {/* Technician markers */}
-            {technicians.map((tech) => {
-              const location = tech.location as { latitude: number, longitude: number };
+          {/* Simple visual representation of technicians */}
+          <div className="relative h-[200px] bg-muted rounded-lg overflow-hidden mb-4 p-4 border border-border">
+            {/* Current user */}
+            <div className="absolute left-1/2 bottom-4 transform -translate-x-1/2 flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-1">
+                <UserRound size={20} />
+              </div>
+              <span className="text-xs font-medium">You</span>
+            </div>
+
+            {/* Technicians relative positioning */}
+            {techsWithDistance.map((tech, index) => {
+              if (!tech.distance) return null;
               
-              // Skip technicians with invalid location data
-              if (!location || !location.latitude || !location.longitude) {
-                console.warn(`Skipping marker for technician ${tech.id} due to invalid location data`);
-                return null;
-              }
+              // Calculate position based on simple layout
+              // First technician is always to the right, subsequent ones are arranged in a semicircle
+              const angle = (index * 45) - 45; // Spread from -45 to 135 degrees
+              const normalizedDistance = Math.min(tech.distance, 5) / 5; // Max display distance is 5km
+              const radius = 80 * normalizedDistance; // Max radius of 80px
+              
+              // Calculate x,y coords
+              const x = radius * Math.cos(angle * Math.PI / 180);
+              const y = -radius * Math.sin(angle * Math.PI / 180); // Negative since y increases downward in CSS
+              
+              const isSelected = selectedTechnician?.id === tech.id;
               
               return (
-                <Marker
+                <div 
                   key={tech.id}
-                  position={{
-                    lat: location.latitude,
-                    lng: location.longitude
+                  className={`absolute left-1/2 top-1/2 flex flex-col items-center cursor-pointer transition-all ${isSelected ? 'scale-110' : ''}`}
+                  style={{ 
+                    transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                    zIndex: isSelected ? 10 : 1
                   }}
-                  icon={{
-                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                  }}
-                  onClick={() => {
-                    const techWithDistance = techsWithDistance.find(t => t.id === tech.id) || tech;
-                    setSelectedTechnician(techWithDistance);
-                  }}
-                />
+                  onClick={() => setSelectedTechnician(tech)}
+                >
+                  <div className={`w-10 h-10 rounded-full ${isSelected ? 'bg-destructive' : 'bg-secondary'} flex items-center justify-center text-primary-foreground mb-1 border-2 ${isSelected ? 'border-primary' : 'border-transparent'}`}>
+                    <CircleUser size={20} />
+                  </div>
+                  <span className="text-xs font-medium bg-background/80 px-1 rounded">{tech.distance.toFixed(1)}km</span>
+                </div>
               );
             })}
-            
-            {/* Info window for selected technician */}
-            {selectedTechnician && 
-             selectedTechnician.location && 
-             (selectedTechnician.location as any).latitude && 
-             (selectedTechnician.location as any).longitude && (
-              <InfoWindow
-                position={{
-                  lat: (selectedTechnician.location as any).latitude,
-                  lng: (selectedTechnician.location as any).longitude
-                }}
-                onCloseClick={() => setSelectedTechnician(null)}
-              >
-                <div className="p-2 max-w-xs">
-                  <h3 className="font-bold">{selectedTechnician.firstName} {selectedTechnician.lastName}</h3>
-                  <div className="text-sm mt-1">
-                    <div className="flex items-center gap-1">
-                      <Phone size={14} /> Tech ID: {selectedTechnician.techId}
-                    </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Phone size={14} /> Username: {selectedTechnician.username}
-                    </div>
-                    {selectedTechnician.distance && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <MapPin size={14} /> {selectedTechnician.distance.toFixed(1)} km away
+
+            {/* Distance indicators */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[80px] h-[80px] rounded-full border border-dashed border-border/50 opacity-30"></div>
+              <div className="w-[160px] h-[160px] rounded-full border border-dashed border-border/50 opacity-30"></div>
+            </div>
+          </div>
+
+          {/* Selected technician details */}
+          {selectedTechnician && (
+            <Card className="mb-4 bg-accent">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-lg">{selectedTechnician.firstName} {selectedTechnician.lastName}</h3>
+                    <div className="text-sm mt-2 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Phone size={14} /> Tech ID: {selectedTechnician.techId}
                       </div>
-                    )}
-                    {selectedTechnician.travelTime && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Clock size={14} /> {selectedTechnician.travelTime} drive
+                      <div className="flex items-center gap-1">
+                        <CircleUser size={14} /> Username: {selectedTechnician.username}
                       </div>
-                    )}
-                    <div className="mt-2">
-                      <Badge variant="outline">
-                        Quantity: {(selectedTechnician.inventory as any)[productId.toString()]}
+                      {selectedTechnician.distance && (
+                        <div className="flex items-center gap-1">
+                          <MapPin size={14} /> {selectedTechnician.distance.toFixed(1)} km away
+                        </div>
+                      )}
+                      {selectedTechnician.travelTime && (
+                        <div className="flex items-center gap-1">
+                          <Clock size={14} /> {selectedTechnician.travelTime} drive
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex flex-col items-center">
+                      <PackageCheck size={24} className="text-primary mb-1" />
+                      <Badge variant="outline" className="mt-1">
+                        Quantity: {(selectedTechnician.inventory as any)[productId.toString()] || 0}
                       </Badge>
                     </div>
                   </div>
                 </div>
-              </InfoWindow>
-            )}
-          </GoogleMap>
+              </CardContent>
+            </Card>
+          )}
         </CardContent>
       </Card>
       
+      {/* List of technicians */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {techsWithDistance.map((tech) => (
-          <Card key={tech.id} className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => setSelectedTechnician(tech)}>
+          <Card 
+            key={tech.id} 
+            className={`cursor-pointer hover:bg-accent/50 transition-colors ${selectedTechnician?.id === tech.id ? 'border-primary border-2' : ''}`}
+            onClick={() => setSelectedTechnician(tech)}
+          >
             <CardContent className="p-4">
               <h3 className="font-bold">{tech.firstName} {tech.lastName}</h3>
               <div className="text-sm mt-2 space-y-1">
@@ -253,7 +199,7 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
                   <Phone size={14} /> Tech ID: {tech.techId}
                 </div>
                 <div className="flex items-center gap-1">
-                  <Phone size={14} /> Username: {tech.username}
+                  <CircleUser size={14} /> Username: {tech.username}
                 </div>
                 {tech.distance && (
                   <div className="flex items-center gap-1">
@@ -267,7 +213,7 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
                 )}
                 <div className="mt-2">
                   <Badge variant="outline">
-                    Quantity: {(tech.inventory as any)[productId.toString()]}
+                    Quantity: {(tech.inventory as any)[productId.toString()] || 0}
                   </Badge>
                 </div>
               </div>
