@@ -4,7 +4,7 @@ import { AISearchResponse } from "@/lib/types";
 
 interface AIResponseBoxProps {
   response: AISearchResponse;
-  onGetProducts: () => void;
+  onGetProductInfo: (productName: string) => void;
 }
 
 // Function to clean up text and remove unwanted symbols or formatting
@@ -34,7 +34,20 @@ const cleanupText = (text: string | undefined): string => {
   return cleaned;
 };
 
-const AIResponseBox = ({ response, onGetProducts }: AIResponseBoxProps) => {
+const AIResponseBox = ({ response, onGetProductInfo }: AIResponseBoxProps) => {
+  // Determine which product to show info for (primary is preferred)
+  const getRecommendedProductName = (): string => {
+    if (response.products?.primary) {
+      return cleanupText(response.products.primary).split(' ')[0]; // Get first word of primary product
+    } else if (response.products?.alternative) {
+      return cleanupText(response.products.alternative).split(' ')[0]; // Get first word of alternative product
+    } else {
+      return ""; // No product found
+    }
+  };
+
+  const productName = getRecommendedProductName();
+  
   return (
     <Card className="mb-6 bg-white rounded-lg shadow-md">
       <CardHeader className="p-4 pb-0">
@@ -72,19 +85,15 @@ const AIResponseBox = ({ response, onGetProducts }: AIResponseBoxProps) => {
         </div>
         
         <div className="mt-4 flex">
-          <Button 
-            variant="outline" 
-            className="text-primary border border-primary rounded px-3 py-1 text-sm mr-2"
-            onClick={onGetProducts}
-          >
-            Get Products
-          </Button>
-          <Button 
-            variant="outline"
-            className="text-neutral-dark border border-neutral-light rounded px-3 py-1 text-sm"
-          >
-            Ask Follow-up
-          </Button>
+          {productName && (
+            <Button 
+              variant="outline" 
+              className="text-primary border border-primary rounded px-3 py-1 text-sm"
+              onClick={() => onGetProductInfo(productName)}
+            >
+              Get Product Info
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

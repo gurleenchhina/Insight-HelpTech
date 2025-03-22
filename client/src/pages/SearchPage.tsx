@@ -4,12 +4,15 @@ import SearchInterface from "@/components/SearchInterface";
 import AIResponseBox from "@/components/AIResponseBox";
 import RecentSearches from "@/components/RecentSearches";
 import { usePestControl } from "@/hooks/usePestControl";
-import { AISearchResponse } from "@/lib/types";
+import { AISearchResponse, Product } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 const SearchPage = () => {
   const { searchWithAI, searchWithImage, getRecentSearches, getRecommendations } = usePestControl();
   const [searchResponse, setSearchResponse] = useState<AISearchResponse | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const { toast } = useToast();
 
   const handleSearch = async (query: string) => {
     setIsSearching(true);
@@ -35,9 +38,43 @@ const SearchPage = () => {
     }
   };
 
-  const handleGetProducts = () => {
-    if (searchResponse?.pestType && searchResponse.pestType !== 'Unknown') {
-      getRecommendations(searchResponse.pestType);
+  const handleGetProductInfo = async (productName: string) => {
+    try {
+      // Get product details by name
+      const response = await apiRequest({
+        url: `/api/products/by-name/${encodeURIComponent(productName)}`,
+        method: 'GET'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Product not found');
+      }
+      
+      const product: Product = await response.json();
+      
+      // Now we have the product details, get all recommendations for this pest
+      if (searchResponse?.pestType && searchResponse.pestType !== 'Unknown') {
+        getRecommendations(searchResponse.pestType);
+      }
+      
+      // Provide feedback to the user
+      toast({
+        title: `Loading details for ${product.name}`,
+        description: "Showing product information and recommendations"
+      });
+      
+    } catch (error) {
+      console.error('Error fetching product info:', error);
+      toast({
+        title: 'Product Not Found',
+        description: 'Unable to load detailed product information',
+        variant: 'destructive'
+      });
+      
+      // Fall back to regular pest recommendations
+      if (searchResponse?.pestType && searchResponse.pestType !== 'Unknown') {
+        getRecommendations(searchResponse.pestType);
+      }
     }
   };
 
@@ -59,7 +96,10 @@ const SearchPage = () => {
       )}
       
       {!isSearching && searchResponse && (
-        <AIResponseBox response={searchResponse} onGetProducts={handleGetProducts} />
+        <AIResponseBox 
+          response={searchResponse} 
+          onGetProductInfo={handleGetProductInfo} 
+        />
       )}
       
       <RecentSearches 
