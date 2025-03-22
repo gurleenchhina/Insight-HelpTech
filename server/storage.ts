@@ -28,7 +28,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByTechId(techId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  authenticateUser(techId: string, pin: string): Promise<User | null>;
+  authenticateUser(username: string, pin: string): Promise<User | null>;
   updateUserLocation(userId: number, latitude: number, longitude: number): Promise<User>;
   updateUserInventory(userId: number, productId: number, quantity: number): Promise<User>;
   updateUserSettings(userId: number, settings: Partial<UserSettings>): Promise<User>;
@@ -445,8 +445,8 @@ export class MemStorage implements IStorage {
     return user;
   }
   
-  async authenticateUser(techId: string, pin: string): Promise<User | null> {
-    const user = await this.getUserByTechId(techId);
+  async authenticateUser(username: string, pin: string): Promise<User | null> {
+    const user = await this.getUserByUsername(username);
     if (!user || user.pin !== pin) {
       return null;
     }

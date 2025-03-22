@@ -100,14 +100,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User signup
+  app.post("/api/auth/signup", async (req: Request, res: Response) => {
+    try {
+      const userData = signupSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(409).json({ message: "Username already exists" });
+      }
+      
+      const newUser = await storage.createUser(userData);
+      
+      // Don't send the pin in the response
+      const { pin: _, ...userWithoutPin } = newUser;
+      res.status(201).json(userWithoutPin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Registration failed", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
   // User authentication
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
-      const { techId, pin } = loginSchema.parse(req.body);
-      const user = await storage.authenticateUser(techId, pin);
+      const { username, pin } = loginSchema.parse(req.body);
+      const user = await storage.authenticateUser(username, pin);
       
       if (!user) {
-        return res.status(401).json({ message: "Invalid tech ID or PIN" });
+        return res.status(401).json({ message: "Invalid username or PIN" });
       }
       
       // Don't send the pin in the response

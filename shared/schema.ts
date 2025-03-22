@@ -4,9 +4,8 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  techId: text("tech_id").notNull().unique(), // 4-digit ID
+  username: text("username").notNull().unique(), // Unique username for login
   pin: text("pin").notNull(), // 4-digit PIN 
-  username: text("username").notNull(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   location: json("location").default({}).notNull(), // GPS coordinates
@@ -19,14 +18,15 @@ export const users = pgTable("users", {
     textSize: 16
   }).notNull(), // User settings
   lastActive: text("last_active"),
+  techId: text("tech_id"), // Keeping for backward compatibility, now optional
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  techId: true,
-  pin: true,
   username: true,
+  pin: true,
   firstName: true,
   lastName: true,
+  techId: true,
 });
 
 export const products = pgTable("products", {
@@ -95,8 +95,16 @@ export const aiImageSearchRequestSchema = z.object({
 
 // Auth schemas
 export const loginSchema = z.object({
-  techId: z.string().length(4, "Tech ID must be exactly 4 digits"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
   pin: z.string().length(4, "PIN must be exactly 4 digits")
+});
+
+export const signupSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  pin: z.string().length(4, "PIN must be exactly 4 digits"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  techId: z.string().optional(),
 });
 
 export const updateLocationSchema = z.object({
@@ -145,3 +153,4 @@ export type UpdateInventoryRequest = z.infer<typeof updateInventorySchema>;
 export type UpdateSettingsRequest = z.infer<typeof updateSettingsSchema>;
 export type NearbyTechRequest = z.infer<typeof nearbyTechRequestSchema>;
 export type SpeechToTextRequest = z.infer<typeof speechToTextRequestSchema>;
+export type SignupRequest = z.infer<typeof signupSchema>;
