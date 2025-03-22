@@ -45,8 +45,7 @@ const SearchPage = () => {
   return (
     <Container className="mx-auto p-4">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-primary mb-2">HelpTech Pest Control AI</h1>
-        <p className="text-neutral-dark">Ask me about any pest situation or product recommendation</p>
+        <p className="text-neutral-dark">Already called service manager 10 times today? Give them a break, I can help!</p>
       </div>
       
       <SearchInterface onSearch={handleSearch} onImageSearch={handleImageSearch} />
