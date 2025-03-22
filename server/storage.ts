@@ -120,8 +120,11 @@ export class MemStorage implements IStorage {
       { id: this.currentPestCategoryId++, name: "Ants", imageUrl: "https://images.unsplash.com/photo-1611576433610-61345f4d110b?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
       { id: this.currentPestCategoryId++, name: "Spiders", imageUrl: "https://images.unsplash.com/photo-1556280309-2ec9fbcced52?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
       { id: this.currentPestCategoryId++, name: "Wasps", imageUrl: "https://images.unsplash.com/photo-1589825274766-c488dae7a0cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
-      { id: this.currentPestCategoryId++, name: "Stinkbugs", imageUrl: "https://images.unsplash.com/photo-1596839347042-6ee447982327?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
+      { id: this.currentPestCategoryId++, name: "Stinkbugs", imageUrl: "https://cdn.pixabay.com/photo/2014/04/12/17/39/shield-bug-322780_1280.jpg" },
       { id: this.currentPestCategoryId++, name: "Rodents", imageUrl: "https://images.unsplash.com/photo-1548247414-3ab903371542?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" },
+      { id: this.currentPestCategoryId++, name: "Centipedes", imageUrl: "https://cdn.pixabay.com/photo/2016/08/31/15/41/centipede-1633894_1280.jpg" },
+      { id: this.currentPestCategoryId++, name: "Millipedes", imageUrl: "https://cdn.pixabay.com/photo/2018/06/24/11/40/millipede-3494991_1280.jpg" },
+      { id: this.currentPestCategoryId++, name: "Boxelder Bugs", imageUrl: "https://cdn.pixabay.com/photo/2017/09/24/13/58/insect-2781351_1280.jpg" },
     ];
     
     categories.forEach(category => {
@@ -264,6 +267,36 @@ export class MemStorage implements IStorage {
         isPrimaryChoice: false,
         requiresVacancy: false,
         fullLabelLink: "/api/labels/resolv-soft-bait"
+      },
+      { 
+        id: this.currentProductId++, 
+        name: "Demand CS", 
+        regNumber: "27428", 
+        activeIngredient: "Lambda-cyhalothrin 9.7%", 
+        applicationRate: "8-16 mL per liter of water", 
+        safetyPrecautions: [
+          "DO NOT apply when people or pets are present",
+          "Wear long-sleeved shirt, long pants, chemical resistant gloves",
+          "Allow treated surfaces to dry completely before re-entry"
+        ],
+        isPrimaryChoice: true,
+        requiresVacancy: true,
+        fullLabelLink: "/api/labels/demand-cs"
+      },
+      { 
+        id: this.currentProductId++, 
+        name: "Glue Traps", 
+        regNumber: "N/A", 
+        activeIngredient: "No active ingredients", 
+        applicationRate: "Place traps where insect activity is observed", 
+        safetyPrecautions: [
+          "Keep out of reach of children and pets",
+          "Place in areas inaccessible to non-target animals",
+          "Do not place in areas where food is being prepared or consumed"
+        ],
+        isPrimaryChoice: false,
+        requiresVacancy: false,
+        fullLabelLink: null
       }
     ];
     
@@ -397,6 +430,74 @@ export class MemStorage implements IStorage {
         productId: 8, // Contrac Blox
         location: "interior",
         advice: "Place in tamper-resistant bait stations indoors where rodent activity is observed. Secure stations to prevent movement."
+      },
+      
+      // Centipedes Interior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 6, // Centipedes
+        productId: 1, // SECLIRA WSG
+        location: "interior",
+        advice: "Apply SECLIRA WSG in areas where centipedes are active, focusing on damp areas, basements, and crawl spaces. Use glue traps in conjunction with sprays for best results."
+      },
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 6, // Centipedes
+        productId: 11, // Glue Traps
+        location: "interior",
+        advice: "Place glue traps along baseboards, in corners, and near entry points. Check and replace regularly for effective monitoring and control."
+      },
+      
+      // Centipedes Exterior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 6, // Centipedes
+        productId: 4, // Suspend Polyzone
+        location: "exterior",
+        advice: "Apply to foundation and perimeter up to 3 feet from the structure. Focus on entry points, areas with excess moisture, and ground-level hiding spots."
+      },
+      
+      // Millipedes Interior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 7, // Millipedes
+        productId: 1, // SECLIRA WSG
+        location: "interior",
+        advice: "Apply SECLIRA WSG in areas where millipedes are found, focusing on entry points, basements, and areas with high moisture. Use glue traps for monitoring."
+      },
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 7, // Millipedes
+        productId: 11, // Glue Traps
+        location: "interior",
+        advice: "Place glue traps in corners, along baseboards, and near entry points where millipedes are active. Monitor and replace regularly."
+      },
+      
+      // Millipedes Exterior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 7, // Millipedes
+        productId: 4, // Suspend Polyzone
+        location: "exterior",
+        advice: "Apply as a barrier treatment around the foundation and in areas with mulch, leaf litter, and other organic debris where millipedes may shelter."
+      },
+      
+      // Boxelder Bugs Interior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 8, // Boxelder Bugs
+        productId: 10, // Demand CS
+        location: "interior",
+        advice: "Apply as a spot treatment to windowsills, door frames, and other areas where boxelder bugs congregate. Focus on sunny exposures where they tend to gather."
+      },
+      
+      // Boxelder Bugs Exterior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 8, // Boxelder Bugs
+        productId: 10, // Demand CS
+        location: "exterior",
+        advice: "Apply as a barrier treatment on the structure's exterior, focusing on south and west-facing walls, around windows and doors, and near boxelder trees."
       }
     ];
     
