@@ -10,9 +10,29 @@ export interface AISearchResponse {
   applicationAdvice?: string;
 }
 
+// OpenRouter API response types
+interface OpenRouterMessage {
+  role: string;
+  content: string;
+}
+
+interface OpenRouterChoice {
+  message: OpenRouterMessage;
+  index: number;
+  finish_reason: string;
+}
+
+interface OpenRouterResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: OpenRouterChoice[];
+}
+
 // API Constants
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const SITE_URL = "https://helptech.replit.app"; // Replace with your actual site URL
+const SITE_URL = "https://helptech.replit.app"; 
 const SITE_NAME = "HelpTech Pest Control";
 const MODEL = "deepseek/deepseek-r1-zero:free"; // Using DeepSeek model
 
@@ -23,8 +43,8 @@ export async function processAISearch(queryData: string): Promise<AISearchRespon
   try {
     // Parse the enhanced query data
     let userQuery = queryData;
-    let pestCategoriesData = [];
-    let productsData = [];
+    let pestCategoriesData: any[] = [];
+    let productsData: any[] = [];
     
     try {
       const parsedData = JSON.parse(queryData);
@@ -107,7 +127,7 @@ Respond in JSON format with these fields:
       throw new Error(`API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as OpenRouterResponse;
     
     // Handle the response format
     const content = data.choices?.[0]?.message?.content;
@@ -149,8 +169,8 @@ Respond in JSON format with these fields:
 export async function processImageSearch(base64Image: string, enhancedContext: string = '{}'): Promise<AISearchResponse> {
   try {
     // Parse enhanced context if provided
-    let pestCategoriesData = [];
-    let productsData = [];
+    let pestCategoriesData: any[] = [];
+    let productsData: any[] = [];
     
     try {
       const parsedData = JSON.parse(enhancedContext);
@@ -231,7 +251,7 @@ Respond in JSON format with these fields:
       throw new Error(`API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as OpenRouterResponse;
     
     // Handle the response format
     const content = data.choices?.[0]?.message?.content;
@@ -278,10 +298,7 @@ function extractPestType(content: string): string {
 }
 
 function extractProducts(content: string): { primary?: string; alternative?: string } {
-  const products = {
-    primary: undefined,
-    alternative: undefined
-  };
+  const products: { primary?: string; alternative?: string } = {};
   
   // List of known products to search for
   const knownProducts = [
