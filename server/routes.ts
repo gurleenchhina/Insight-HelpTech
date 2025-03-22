@@ -8,7 +8,7 @@ import {
   pestProductResponseSchema, 
   pestCategoryResponseSchema
 } from "@shared/schema";
-import { processAISearch, processImageSearch } from "./lib/deepseekAI";
+import { processTextSearch, processImageSearch } from "./lib/openai";
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
@@ -56,8 +56,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save the search query to history
       await storage.addSearchQuery(query);
       
-      // Process with DeepSeek AI
-      const result = await processAISearch(query);
+      // Process with OpenAI
+      const result = await processTextSearch(query);
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -72,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { image } = aiImageSearchRequestSchema.parse(req.body);
       
-      // Process with DeepSeek AI
+      // Process with OpenAI
       const result = await processImageSearch(image);
       res.json(result);
     } catch (error) {
