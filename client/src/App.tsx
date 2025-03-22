@@ -155,6 +155,7 @@ function App() {
             <Layout activeTab={activeTab} onTabChange={setActiveTab}>
               {activeTab === 'pests' && <HomePage />}
               {activeTab === 'search' && <SearchPage />}
+              {activeTab === 'chatbot' && <ChatbotPage />}
               {activeTab === 'settings' && (
                 <SettingsPage 
                   settings={settings} 

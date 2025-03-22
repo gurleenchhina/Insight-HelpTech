@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mic, Camera, Send, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Mic, Send, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AISearchResponse } from '@/lib/types';
 import Layout from '@/components/Layout';
@@ -67,33 +67,35 @@ const ChatbotPage = () => {
       }]);
 
       // Call the API
-      const response = await apiRequest<AISearchResponse>('/api/search', {
+      const response = await apiRequest('/api/search', {
         method: 'POST',
         body: JSON.stringify({ query: userMessage.content })
       });
+
+      const responseData = await response.json() as AISearchResponse;
 
       // Remove loading message and add real response
       setMessages(prev => {
         const filteredMessages = prev.filter(m => m.id !== loadingMessageId);
         
-        let botResponseContent = response.recommendation || 'I couldn\'t process that request.';
+        let botResponseContent = responseData.recommendation || 'I couldn\'t process that request.';
         
         // Add product recommendations if available
-        if (response.products) {
-          if (response.products.primary || response.products.alternative) {
+        if (responseData.products) {
+          if (responseData.products.primary || responseData.products.alternative) {
             botResponseContent += '\n\nRecommended Products:';
-            if (response.products.primary) {
-              botResponseContent += `\n- Primary: ${response.products.primary}`;
+            if (responseData.products.primary) {
+              botResponseContent += `\n- Primary: ${responseData.products.primary}`;
             }
-            if (response.products.alternative) {
-              botResponseContent += `\n- Alternative: ${response.products.alternative}`;
+            if (responseData.products.alternative) {
+              botResponseContent += `\n- Alternative: ${responseData.products.alternative}`;
             }
           }
         }
         
         // Add application advice if available
-        if (response.applicationAdvice) {
-          botResponseContent += `\n\nApplication Advice: ${response.applicationAdvice}`;
+        if (responseData.applicationAdvice) {
+          botResponseContent += `\n\nApplication Advice: ${responseData.applicationAdvice}`;
         }
         
         return [...filteredMessages, {
@@ -191,8 +193,10 @@ const ChatbotPage = () => {
         body: JSON.stringify({ audioData: base64Audio })
       });
       
-      if (response.text) {
-        setInput(response.text);
+      const responseData = await response.json();
+      
+      if (responseData.text) {
+        setInput(responseData.text);
         setTimeout(() => handleSendMessage(), 300); // Small delay to allow state update
       } else {
         toast({
@@ -263,33 +267,35 @@ const ChatbotPage = () => {
         
         try {
           // Call the API
-          const response = await apiRequest<AISearchResponse>('/api/image-search', {
+          const response = await apiRequest('/api/image-search', {
             method: 'POST',
             body: JSON.stringify({ image: base64String })
           });
+          
+          const responseData = await response.json() as AISearchResponse;
 
           // Remove loading message and add real response
           setMessages(prev => {
             const filteredMessages = prev.filter(m => m.id !== loadingMessageId);
             
-            let botResponseContent = response.recommendation || 'I couldn\'t analyze that image.';
+            let botResponseContent = responseData.recommendation || 'I couldn\'t analyze that image.';
             
             // Add product recommendations if available
-            if (response.products) {
-              if (response.products.primary || response.products.alternative) {
+            if (responseData.products) {
+              if (responseData.products.primary || responseData.products.alternative) {
                 botResponseContent += '\n\nRecommended Products:';
-                if (response.products.primary) {
-                  botResponseContent += `\n- Primary: ${response.products.primary}`;
+                if (responseData.products.primary) {
+                  botResponseContent += `\n- Primary: ${responseData.products.primary}`;
                 }
-                if (response.products.alternative) {
-                  botResponseContent += `\n- Alternative: ${response.products.alternative}`;
+                if (responseData.products.alternative) {
+                  botResponseContent += `\n- Alternative: ${responseData.products.alternative}`;
                 }
               }
             }
             
             // Add application advice if available
-            if (response.applicationAdvice) {
-              botResponseContent += `\n\nApplication Advice: ${response.applicationAdvice}`;
+            if (responseData.applicationAdvice) {
+              botResponseContent += `\n\nApplication Advice: ${responseData.applicationAdvice}`;
             }
             
             return [...filteredMessages, {
@@ -383,7 +389,7 @@ const ChatbotPage = () => {
   };
 
   return (
-    <Layout activeTab="Chatbot" onTabChange={() => {}}>
+    <Layout activeTab="chatbot" onTabChange={() => {}}>
       <div className="container mx-auto p-4 max-w-4xl">
         <Card className="min-h-[70vh] flex flex-col">
           <CardHeader className="pb-2">
