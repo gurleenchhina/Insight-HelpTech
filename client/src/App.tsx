@@ -11,7 +11,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import Layout from "@/components/Layout";
 import LoadingScreen from '@/components/LoadingScreen';
 import UserAuth from '@/components/UserAuth';
-import LocationTracker from '@/components/LocationTracker';
+import AutoLocationTracker from '@/components/AutoLocationTracker';
 import { SettingsState, User } from '@/lib/types';
 
 function App() {
@@ -147,21 +147,24 @@ function App() {
             <UserAuth onLoginSuccess={handleLoginSuccess} />
           </div>
         ) : (
-          <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-            {activeTab === 'pests' && <HomePage />}
-            {activeTab === 'search' && <SearchPage />}
-            {activeTab === 'settings' && (
-              <SettingsPage 
-                settings={settings} 
-                updateSetting={updateSetting}
-                user={user}
-                onLogout={handleLogout}
-                onInventoryUpdate={updateInventory}
-              />
-            )}
-            {/* Add LocationTracker component that will work in background */}
-            {user && <LocationTracker user={user} />}
-          </Layout>
+          <>
+            {/* Background location tracker (no UI) */}
+            <AutoLocationTracker user={user} />
+            
+            <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+              {activeTab === 'pests' && <HomePage />}
+              {activeTab === 'search' && <SearchPage />}
+              {activeTab === 'settings' && (
+                <SettingsPage 
+                  settings={settings} 
+                  updateSetting={updateSetting}
+                  user={user}
+                  onLogout={handleLogout}
+                  onInventoryUpdate={updateInventory}
+                />
+              )}
+            </Layout>
+          </>
         )}
       </div>
       <Toaster />

@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { Product, User } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Navigation, Phone, AlertCircle } from 'lucide-react';
+import { MapPin, Navigation, Phone, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import TechnicianMap from './TechnicianMap';
+import { useLocationTracking } from '@/hooks/useLocationTracking';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface InventoryCheckProps {
@@ -31,6 +33,13 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [searchRadius, setSearchRadius] = useState(10); // km
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(true);
+  
+  // Use location tracking hook
+  const { technicians, sendLocation, isConnected } = useLocationTracking({
+    userId,
+    enabled: locationTrackingEnabled
+  });
   
   // Get user's current location when component mounts
   useEffect(() => {
