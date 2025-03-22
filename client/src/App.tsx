@@ -21,7 +21,7 @@ function App() {
   const [settings, setSettings] = useState<SettingsState>({
     darkMode: false,
     textSize: 3,
-    brightness: 3,
+    brightness: 5, // Increase default brightness for better visibility
     safetyAlerts: true,
     ppeReminders: true
   });
@@ -106,7 +106,7 @@ function App() {
     setSettings({
       darkMode: false,
       textSize: 3,
-      brightness: 3,
+      brightness: 5, // Match the same increased brightness as initial state
       safetyAlerts: true,
       ppeReminders: true
     });
@@ -130,8 +130,9 @@ function App() {
     document.documentElement.classList.remove(...textSizeClasses);
     document.documentElement.classList.add(textSizeClasses[settings.textSize - 1] || 'text-base');
     
-    // Apply brightness using a CSS variable
-    document.documentElement.style.setProperty('--app-brightness', `${settings.brightness * 20}%`);
+    // Apply brightness using a CSS variable (ensuring minimum visibility)
+    const brightnessPercentage = Math.max(60, settings.brightness * 20);
+    document.documentElement.style.setProperty('--app-brightness', `${brightnessPercentage}%`);
   }, [settings]);
 
   return (

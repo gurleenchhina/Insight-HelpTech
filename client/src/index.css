@@ -16,7 +16,35 @@
     filter: brightness(var(--app-brightness));
   }
   
+  /* Enhance text contrast */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+    text-shadow: 0 0 1px rgba(0,0,0,0.1);
+  }
+  
+  p, span, div, button, a {
+    text-shadow: 0 0 1px rgba(0,0,0,0.05);
+  }
+  
+  /* Improve input visibility */
+  input, textarea, select {
+    @apply border-2;
+  }
+  
+  /* Force dark mode colors */
   .dark {
     color-scheme: dark;
+  }
+  
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+  .dark p, .dark span, .dark div {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 0 2px rgba(0,0,0,0.3);
+  }
+  
+  /* Light mode enhancement */
+  h1, h2, h3, h4, h5, h6,
+  p, span, div {
+    color: rgba(0, 0, 0, 0.9) !important;
   }
 }
