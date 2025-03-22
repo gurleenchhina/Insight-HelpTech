@@ -22,8 +22,8 @@ const SearchInterface = ({ onSearch, onImageSearch }: SearchInterfaceProps) => {
   const { toast } = useToast();
   
   const placeholders = [
-    "What's bugging you?",
-    "Already called service manager 10 times today? Give them a break, I can help!"
+    "what's bugging you?",
+    "give service manager a break"
   ];
 
   // Rotate placeholders periodically
