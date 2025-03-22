@@ -33,9 +33,16 @@ export function usePestControl() {
     }));
     
     try {
-      const response = await apiRequest('POST', '/api/recommendations', {
-        pestCategory,
-        location
+      const response = await apiRequest({
+        method: 'POST',
+        url: '/api/recommendations',
+        body: JSON.stringify({
+          pestCategory,
+          location
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       const data = await response.json();
@@ -65,13 +72,39 @@ export function usePestControl() {
 
   const searchWithAI = useCallback(async (query: string): Promise<AISearchResponse | null> => {
     try {
-      const response = await apiRequest('POST', '/api/search', { query });
-      return await response.json();
+      const response = await apiRequest({
+        method: 'POST',
+        url: '/api/search',
+        body: JSON.stringify({ query }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Check if the response is HTML (which would cause JSON parsing errors)
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("text/html")) {
+        throw new Error("Received HTML instead of JSON. The AI service might be unavailable.");
+      }
+      
+      const result = await response.json();
+      return result;
     } catch (error) {
       console.error('AI search failed:', error);
+      
+      // Provide a more helpful error message
+      let errorMessage = 'Failed to process your search';
+      if (error instanceof Error) {
+        if (error.message.includes("Unexpected token")) {
+          errorMessage = "The AI service returned an invalid response. Please try again later.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: 'Search Failed',
-        description: error instanceof Error ? error.message : 'Failed to process your search',
+        description: errorMessage,
         variant: 'destructive'
       });
       return null;
@@ -80,13 +113,39 @@ export function usePestControl() {
 
   const searchWithImage = useCallback(async (base64Image: string): Promise<AISearchResponse | null> => {
     try {
-      const response = await apiRequest('POST', '/api/image-search', { image: base64Image });
-      return await response.json();
+      const response = await apiRequest({
+        method: 'POST',
+        url: '/api/image-search',
+        body: JSON.stringify({ image: base64Image }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Check if the response is HTML (which would cause JSON parsing errors)
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("text/html")) {
+        throw new Error("Received HTML instead of JSON. The AI service might be unavailable.");
+      }
+      
+      const result = await response.json();
+      return result;
     } catch (error) {
       console.error('Image search failed:', error);
+      
+      // Provide a more helpful error message
+      let errorMessage = 'Failed to process your image';
+      if (error instanceof Error) {
+        if (error.message.includes("Unexpected token")) {
+          errorMessage = "The AI service returned an invalid response. Please try again later.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: 'Image Search Failed',
-        description: error instanceof Error ? error.message : 'Failed to process your image',
+        description: errorMessage,
         variant: 'destructive'
       });
       return null;
