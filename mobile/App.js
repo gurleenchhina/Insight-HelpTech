@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import SearchScreen from './screens/SearchScreen';
 import InventoryScreen from './screens/InventoryScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import ChatbotScreen from './screens/ChatbotScreen';
 
 // Create navigators
 const Tab = createBottomTabNavigator();
@@ -61,6 +62,18 @@ export default function App() {
               headerTintColor: '#fff',
               tabBarIcon: ({ color, size }) => (
                 <Ionicons name="cube" color={color} size={size} />
+              ),
+            }}
+          />
+          <Tab.Screen 
+            name="Chatbot" 
+            component={ChatbotScreen}
+            options={{
+              title: 'Chat Assistant',
+              headerStyle: { backgroundColor: '#38a169' },
+              headerTintColor: '#fff',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="chatbubble-ellipses" color={color} size={size} />
               ),
             }}
           />

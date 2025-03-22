@@ -34,6 +34,17 @@ const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
         <Button
           variant="ghost"
           className={`flex flex-col items-center py-2 px-4 rounded-none ${
+            activeTab === 'chatbot' ? 'text-primary' : 'text-neutral-medium'
+          }`}
+          onClick={() => onTabChange('chatbot')}
+        >
+          <span className="material-icons">chat</span>
+          <span className="text-xs mt-1">Chat</span>
+        </Button>
+        
+        <Button
+          variant="ghost"
+          className={`flex flex-col items-center py-2 px-4 rounded-none ${
             activeTab === 'settings' ? 'text-primary' : 'text-neutral-medium'
           }`}
           onClick={() => onTabChange('settings')}
