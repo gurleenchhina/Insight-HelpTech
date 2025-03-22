@@ -2,7 +2,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import pdf from "pdf-parse";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
