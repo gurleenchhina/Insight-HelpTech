@@ -159,6 +159,8 @@ function App() {
                 onInventoryUpdate={updateInventory}
               />
             )}
+            {/* Add LocationTracker component that will work in background */}
+            {user && <LocationTracker user={user} />}
           </Layout>
         )}
       </div>

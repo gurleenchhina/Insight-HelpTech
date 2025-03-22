@@ -32,10 +32,10 @@ export function setupWebSocketServer(httpServer: Server) {
   log(`WebSocket server initialized`, 'websocket');
   
   // Store client connections mapped to user IDs
-  const clients = new Map();
+  const clients = new Map<number, any>();
 
   wss.on('connection', (ws) => {
-    let userId = null;
+    let userId: number | null = null;
     
     log(`New WebSocket connection established`, 'websocket');
     
@@ -47,11 +47,11 @@ export function setupWebSocketServer(httpServer: Server) {
         
         // Handle different message types
         if (parsedMessage.type === 'location-update' && parsedMessage.userId) {
-          userId = parsedMessage.userId;
+          userId = parsedMessage.userId as number;
           clients.set(userId, ws);
           
           // Extract location data
-          const locationData = parsedMessage.data;
+          const locationData = parsedMessage.data as LocationUpdate;
           
           // Update user location in storage
           await storage.updateUserLocation(
@@ -67,7 +67,7 @@ export function setupWebSocketServer(httpServer: Server) {
         }
         else if (parsedMessage.type === 'initial-data' && parsedMessage.userId) {
           // Register the client with the user ID
-          userId = parsedMessage.userId;
+          userId = parsedMessage.userId as number;
           clients.set(userId, ws);
           
           // Send the current locations of all users to the newly connected client
@@ -98,8 +98,8 @@ export function setupWebSocketServer(httpServer: Server) {
   });
   
   // Broadcast location update to all connected clients
-  function broadcastLocationUpdate(locationUpdate) {
-    const message = {
+  function broadcastLocationUpdate(locationUpdate: LocationUpdate) {
+    const message: WebSocketMessage = {
       type: 'location-update',
       data: locationUpdate
     };

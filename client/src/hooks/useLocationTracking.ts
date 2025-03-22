@@ -42,8 +42,9 @@ export function useLocationTracking({
     if (!enabled || !userId) return;
 
     // Create WebSocket connection to the same host on the same port
+    // Using the specific path we defined in the server to avoid conflicts with Vite
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}`;
+    const wsUrl = `${protocol}//${window.location.host}/api/ws/location`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
