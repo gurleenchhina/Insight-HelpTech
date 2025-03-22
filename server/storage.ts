@@ -79,6 +79,39 @@ export class MemStorage implements IStorage {
     this.currentSearchHistoryId = 1;
     
     this.initializeData();
+    this.initializeTestUsers();
+  }
+  
+  private initializeTestUsers() {
+    // Add a test user for development
+    const timestamp = new Date().toISOString();
+    const testUser = {
+      id: this.currentUserId++,
+      techId: "1234",
+      pin: "5678",
+      username: "jsmith",
+      firstName: "John",
+      lastName: "Smith",
+      location: {
+        latitude: 43.6532,  // Toronto coordinates
+        longitude: -79.3832
+      },
+      inventory: {
+        "1": 5,  // 5 units of SECLIRA WSG
+        "4": 3,  // 3 units of Suspend Polyzone
+        "7": 2   // 2 units of KONK 407
+      },
+      settings: {
+        darkMode: false,
+        brightness: 100,
+        safetyAlerts: true,
+        ppeReminders: true,
+        textSize: 16
+      },
+      lastActive: timestamp
+    };
+    
+    this.users.set(testUser.id, testUser);
   }
   
   private initializeData() {

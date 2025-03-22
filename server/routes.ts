@@ -6,7 +6,13 @@ import {
   aiSearchRequestSchema, 
   aiImageSearchRequestSchema,
   pestProductResponseSchema, 
-  pestCategoryResponseSchema
+  pestCategoryResponseSchema,
+  loginSchema,
+  updateLocationSchema,
+  updateInventorySchema,
+  updateSettingsSchema,
+  nearbyTechRequestSchema,
+  speechToTextRequestSchema
 } from "@shared/schema";
 import { processTextSearch, processImageSearch } from "./lib/openai";
 import fs from "fs";
@@ -94,6 +100,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User authentication
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { techId, pin } = loginSchema.parse(req.body);
+      const user = await storage.authenticateUser(techId, pin);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid tech ID or PIN" });
+      }
+      
+      // Don't send the pin in the response
+      const { pin: _, ...userWithoutPin } = user;
+      res.json(userWithoutPin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Authentication failed", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+  
+  // Update user location
+  app.post("/api/user/:userId/location", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { latitude, longitude } = updateLocationSchema.parse(req.body);
+      
+      const updatedUser = await storage.updateUserLocation(userId, latitude, longitude);
+      
+      // Don't send the pin in the response
+      const { pin: _, ...userWithoutPin } = updatedUser;
+      res.json(userWithoutPin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update location", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+  
+  // Update user inventory
+  app.post("/api/user/:userId/inventory", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { productId, quantity } = updateInventorySchema.parse(req.body);
+      
+      const updatedUser = await storage.updateUserInventory(userId, productId, quantity);
+      
+      // Don't send the pin in the response
+      const { pin: _, ...userWithoutPin } = updatedUser;
+      res.json(userWithoutPin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update inventory", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+  
+  // Update user settings
+  app.post("/api/user/:userId/settings", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const settings = updateSettingsSchema.parse(req.body);
+      
+      const updatedUser = await storage.updateUserSettings(userId, settings);
+      
+      // Don't send the pin in the response
+      const { pin: _, ...userWithoutPin } = updatedUser;
+      res.json(userWithoutPin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update settings", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+  
+  // Get nearby technicians with product
+  app.post("/api/nearby-technicians", async (req: Request, res: Response) => {
+    try {
+      const { productId, latitude, longitude, radiusKm } = nearbyTechRequestSchema.parse(req.body);
+      
+      const techs = await storage.getNearbyTechnicians(productId, latitude, longitude, radiusKm);
+      
+      // Don't send the pin in the response
+      const techsWithoutPin = techs.map(tech => {
+        const { pin: _, ...techWithoutPin } = tech;
+        return techWithoutPin;
+      });
+      
+      res.json(techsWithoutPin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to find nearby technicians", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+  
+  // Voice to text processing
+  app.post("/api/speech-to-text", async (req: Request, res: Response) => {
+    try {
+      const { audioBase64 } = speechToTextRequestSchema.parse(req.body);
+      
+      // For now, we'll just return a mock response
+      // In a real implementation, we would use an appropriate speech-to-text API
+      setTimeout(() => {
+        res.json({ text: "What products should I use for ants inside a home?" });
+      }, 500);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Speech to text processing failed", error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+  
   // Serve product labels
   app.get("/api/labels/:product", (req: Request, res: Response) => {
     const product = req.params.product;
