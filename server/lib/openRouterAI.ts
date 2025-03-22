@@ -138,14 +138,25 @@ Respond in JSON format with these fields:
 
     try {
       // Try to parse as JSON first
-      return JSON.parse(content) as AISearchResponse;
+      const parsedResponse = JSON.parse(content) as AISearchResponse;
+      
+      // Clean up any remaining formatting issues
+      return {
+        recommendation: cleanupResponseText(parsedResponse.recommendation),
+        pestType: parsedResponse.pestType,
+        products: {
+          primary: parsedResponse.products?.primary ? cleanupResponseText(parsedResponse.products.primary) : undefined,
+          alternative: parsedResponse.products?.alternative ? cleanupResponseText(parsedResponse.products.alternative) : undefined
+        },
+        applicationAdvice: parsedResponse.applicationAdvice ? cleanupResponseText(parsedResponse.applicationAdvice) : undefined
+      };
     } catch (parseError) {
       // If not JSON, try to extract structured data from text response
       console.log("Response not in JSON format, attempting to extract structured data");
       
       // Create a simple structured response
       return {
-        recommendation: content,
+        recommendation: cleanupResponseText(content),
         pestType: extractPestType(content),
         products: extractProducts(content),
         applicationAdvice: extractAdvice(content)
@@ -262,14 +273,25 @@ Respond in JSON format with these fields:
 
     try {
       // Try to parse as JSON first
-      return JSON.parse(content) as AISearchResponse;
+      const parsedResponse = JSON.parse(content) as AISearchResponse;
+      
+      // Clean up any remaining formatting issues
+      return {
+        recommendation: cleanupResponseText(parsedResponse.recommendation),
+        pestType: parsedResponse.pestType,
+        products: {
+          primary: parsedResponse.products?.primary ? cleanupResponseText(parsedResponse.products.primary) : undefined,
+          alternative: parsedResponse.products?.alternative ? cleanupResponseText(parsedResponse.products.alternative) : undefined
+        },
+        applicationAdvice: parsedResponse.applicationAdvice ? cleanupResponseText(parsedResponse.applicationAdvice) : undefined
+      };
     } catch (parseError) {
       // If not JSON, try to extract structured data from text response
       console.log("Response not in JSON format, attempting to extract structured data");
       
       // Create a simple structured response
       return {
-        recommendation: content,
+        recommendation: cleanupResponseText(content),
         pestType: extractPestType(content),
         products: extractProducts(content),
         applicationAdvice: extractAdvice(content)
@@ -379,7 +401,7 @@ function extractAdvice(content: string): string | undefined {
       const sentences = content.split(/[.!?]+/);
       for (const sentence of sentences) {
         if (sentence.toLowerCase().includes(indicator)) {
-          return sentence.trim();
+          return cleanupResponseText(sentence.trim());
         }
       }
     }
