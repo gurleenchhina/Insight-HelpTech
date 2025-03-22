@@ -34,6 +34,7 @@ export interface IStorage {
   updateUserSettings(userId: number, settings: Partial<UserSettings>): Promise<User>;
   getUsersWithProductInInventory(productId: number): Promise<User[]>;
   getNearbyTechnicians(productId: number, latitude: number, longitude: number, radiusKm: number): Promise<User[]>;
+  getAllUsers(): Promise<User[]>; // Get all users for location tracking
   
   // Products
   getAllProducts(): Promise<Product[]>;
@@ -766,6 +767,11 @@ export class MemStorage implements IStorage {
     return Array.from(this.searchHistoryItems.values())
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, limit);
+  }
+  
+  // Get all users for location tracking
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 }
 
