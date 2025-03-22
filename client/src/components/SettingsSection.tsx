@@ -122,10 +122,7 @@ const SettingsSection = ({ settings, updateSetting }: SettingsSectionProps) => {
         </CardContent>
       </Card>
       
-      <div className="text-center text-xs text-neutral-medium mt-6">
-        <p>Version 1.0.0</p>
-        <p>&copy; 2023 PestPro Advisor</p>
-      </div>
+      
     </div>
   );
 };
