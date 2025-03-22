@@ -69,15 +69,16 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }
   };
 
-  // Apply brightness to the whole app
+  // We're no longer applying brightness via filter to avoid visibility issues
   React.useEffect(() => {
-    document.documentElement.style.filter = `brightness(${settings.brightness}%)`;
+    // No brightness changes, using static 100% brightness for visibility
+    document.documentElement.style.setProperty('--app-brightness', '100%');
     
     // Clean up
     return () => {
-      document.documentElement.style.filter = '';
+      document.documentElement.style.setProperty('--app-brightness', '100%');
     };
-  }, [settings.brightness]);
+  }, []);
 
   return (
     <div className="space-y-6">
