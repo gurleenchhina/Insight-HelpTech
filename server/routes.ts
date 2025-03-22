@@ -15,7 +15,7 @@ import {
   nearbyTechRequestSchema,
   speechToTextRequestSchema
 } from "@shared/schema";
-import { processAISearch, processImageSearch } from "./lib/openai";
+import { processAISearch, processImageSearch } from "./lib/openRouterAI";
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
