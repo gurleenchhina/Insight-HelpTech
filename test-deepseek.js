@@ -1,5 +1,5 @@
 // Simple test script to check DeepSeek API
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
 const API_KEY = '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';
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
