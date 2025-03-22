@@ -16,7 +16,7 @@ import { SettingsState, User } from '@/lib/types';
 function App() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('pests');
+  const [activeTab, setActiveTab] = useState('search');
   const [user, setUser] = useState<User | null>(null);
   const [settings, setSettings] = useState<SettingsState>({
     darkMode: false,
