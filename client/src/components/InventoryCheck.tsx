@@ -41,7 +41,7 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
     enabled: locationTrackingEnabled
   });
   
-  // Get user's current location when component mounts
+  // Get user's current location when component mounts or when location tracking status changes
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -51,6 +51,11 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
           
           // Update user's location in the backend
           updateUserLocation(latitude, longitude);
+          
+          // Also send location to WebSocket for real-time tracking if enabled
+          if (locationTrackingEnabled && sendLocation) {
+            sendLocation(latitude, longitude);
+          }
         },
         (error) => {
           toast({
@@ -67,7 +72,46 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
         variant: "destructive"
       });
     }
-  }, []);
+  }, [locationTrackingEnabled]);
+  
+  // Setup continuous location tracking
+  useEffect(() => {
+    let watchId: number | null = null;
+    
+    if (locationTrackingEnabled && navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Update local state
+          setUserLocation({ latitude, longitude });
+          
+          // Send to server via API
+          updateUserLocation(latitude, longitude);
+          
+          // Send via WebSocket for real-time updates
+          if (sendLocation) {
+            sendLocation(latitude, longitude);
+          }
+        },
+        (error) => {
+          console.error('Location watch error:', error);
+        },
+        { 
+          enableHighAccuracy: true,
+          maximumAge: 30000,     // Accept positions up to 30 seconds old
+          timeout: 27000        // Wait up to 27 seconds for a position
+        }
+      );
+    }
+    
+    // Cleanup on unmount or when tracking is disabled
+    return () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [locationTrackingEnabled, sendLocation]);
   
   const updateUserLocation = async (latitude: number, longitude: number) => {
     try {
@@ -199,6 +243,30 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Location tracking toggle */}
+          <div className="flex items-center justify-between space-x-2 p-4 mb-4 bg-muted/30 rounded-lg">
+            <div className="space-y-0.5">
+              <Label htmlFor="location-tracking">Location Sharing</Label>
+              <div className="text-sm text-muted-foreground">
+                {locationTrackingEnabled 
+                  ? "Your location is being shared with other technicians" 
+                  : "Your location is not being shared"}
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="location-tracking"
+                checked={locationTrackingEnabled}
+                onCheckedChange={setLocationTrackingEnabled}
+              />
+              {isConnected ? (
+                <Wifi className="h-4 w-4 text-green-500" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
+          </div>
+          
           <div className="space-y-4">
             {products.map((product) => (
               <div key={product.id} className="flex flex-col space-y-2">

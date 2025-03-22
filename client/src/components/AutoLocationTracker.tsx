@@ -73,40 +73,56 @@ const AutoLocationTracker: React.FC<AutoLocationTrackerProps> = ({
       });
   }, []);
   
-  // Set up periodic location tracking
+  // Set up continuous location tracking using watchPosition
   useEffect(() => {
     if (!locationPermission) return;
     
-    // Function to get current position
-    const updateLocation = () => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          // Send location update via WebSocket
-          sendLocation(latitude, longitude);
-          setLocationError(null);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setLocationError(`Error getting location: ${error.message}`);
-        },
-        { 
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
+    let watchId: number | null = null;
+    
+    // Initial position update
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        sendLocation(latitude, longitude);
+        setLocationError(null);
+      },
+      (error) => {
+        console.error('Error getting initial location:', error);
+        setLocationError(`Error getting initial location: ${error.message}`);
+      },
+      { 
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+    
+    // Set up continuous tracking
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Send location update via WebSocket
+        sendLocation(latitude, longitude);
+        setLocationError(null);
+      },
+      (error) => {
+        console.error('Error watching location:', error);
+        setLocationError(`Error tracking location: ${error.message}`);
+      },
+      { 
+        enableHighAccuracy: true,
+        timeout: 27000,        // Timeout after 27 seconds
+        maximumAge: 30000,     // Accept positions up to 30 seconds old
+      }
+    );
+    
+    // Clean up watch on unmount or when tracking is disabled
+    return () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
     };
-    
-    // Update location immediately
-    updateLocation();
-    
-    // Set interval to update location periodically (every 30 seconds)
-    const intervalId = setInterval(updateLocation, 30000);
-    
-    // Clean up interval on unmount or when tracking is disabled
-    return () => clearInterval(intervalId);
   }, [locationPermission, sendLocation]);
   
   // This is a background component - it doesn't render anything
