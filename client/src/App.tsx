@@ -8,7 +8,6 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/HomePage";
 import SearchPage from "@/pages/SearchPage";
 import SettingsPage from "@/pages/SettingsPage";
-import ChatbotPage from "@/pages/ChatbotPage";
 import Layout from "@/components/Layout";
 import LoadingScreen from '@/components/LoadingScreen';
 import UserAuth from '@/components/UserAuth';
@@ -155,7 +154,6 @@ function App() {
             <Layout activeTab={activeTab} onTabChange={setActiveTab}>
               {activeTab === 'pests' && <HomePage />}
               {activeTab === 'search' && <SearchPage />}
-              {activeTab === 'chatbot' && <ChatbotPage />}
               {activeTab === 'settings' && (
                 <SettingsPage 
                   settings={settings} 
