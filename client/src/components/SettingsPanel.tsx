@@ -38,7 +38,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     // Update server
     try {
       setIsSaving(true);
-      const response = await apiRequest(`/api/user/${userId}/settings`, {
+      const response = await apiRequest({
+        url: `/api/user/${userId}/settings`,
         method: 'POST',
         body: JSON.stringify({ [key]: value }),
         headers: {

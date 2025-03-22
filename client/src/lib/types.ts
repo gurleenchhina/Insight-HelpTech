@@ -50,3 +50,18 @@ export interface RecommendationState {
   loading: boolean;
   error: string | null;
 }
+
+export interface User {
+  id: number;
+  techId: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  location: {
+    latitude?: number;
+    longitude?: number;
+  };
+  inventory: Record<string, number>;
+  settings: SettingsState;
+  lastActive: string | null;
+}

@@ -78,7 +78,8 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearchResult }) => {
       const base64Audio = await blobToBase64(audioBlob);
       
       // Send to backend for processing
-      const response = await apiRequest('/api/speech-to-text', {
+      const response = await apiRequest({
+        url: '/api/speech-to-text',
         method: 'POST',
         body: JSON.stringify({ audioBase64: base64Audio }),
         headers: {

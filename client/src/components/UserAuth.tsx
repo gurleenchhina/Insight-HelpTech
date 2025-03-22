@@ -37,7 +37,8 @@ const UserAuth: React.FC<UserAuthProps> = ({ onLoginSuccess }) => {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const response = await apiRequest('/api/auth/login', {
+      const response = await apiRequest({
+        url: '/api/auth/login',
         method: 'POST',
         body: JSON.stringify(data),
         headers: {

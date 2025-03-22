@@ -60,7 +60,8 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
   
   const updateUserLocation = async (latitude: number, longitude: number) => {
     try {
-      const response = await apiRequest(`/api/user/${userId}/location`, {
+      const response = await apiRequest({
+        url: `/api/user/${userId}/location`,
         method: 'POST',
         body: JSON.stringify({ latitude, longitude }),
         headers: {
@@ -80,7 +81,8 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
     try {
       onInventoryUpdate(productId, quantity);
       
-      const response = await apiRequest(`/api/user/${userId}/inventory`, {
+      const response = await apiRequest({
+        url: `/api/user/${userId}/inventory`,
         method: 'POST',
         body: JSON.stringify({ productId, quantity }),
         headers: {
@@ -118,7 +120,8 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
     setSelectedProductId(productId);
     
     try {
-      const response = await apiRequest('/api/nearby-technicians', {
+      const response = await apiRequest({
+        url: '/api/nearby-technicians',
         method: 'POST',
         body: JSON.stringify({
           productId,
