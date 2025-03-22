@@ -3,7 +3,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PestCategory } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
-import { MapPin } from 'lucide-react';
+import { MapPin, Package } from 'lucide-react';
+import { 
+  pestIcons,
+  AntIcon, 
+  SpiderIcon, 
+  WaspIcon, 
+  StinkbugIcon, 
+  RodentIcon,
+  CentipedeIcon,
+  MillipedeIcon,
+  BoxelderBugIcon
+} from "@/components/icons/PestIcons";
 
 interface PestCategoryGridProps {
   onPestSelect: (pestName: string) => void;
@@ -14,17 +25,6 @@ const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGrid
   const { data: categories, isLoading, error } = useQuery<PestCategory[]>({
     queryKey: ['/api/pest-categories'],
   });
-  
-  // Mapping of pest names to emoji icons
-  const pestEmojis: Record<string, string> = {
-    'Ants': '🐜',
-    'Spiders': '🕷️',
-    'Wasps': '🐝',
-    'Stink Bugs': '🐞',
-    'Rodents': '🐭',
-    'Cockroaches': '🪳',
-    'Products': '🧰'
-  };
 
   if (isLoading) {
     return (
@@ -49,6 +49,16 @@ const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGrid
     );
   }
 
+  // Function to get icon for a pest category
+  const getPestIcon = (pestName: string) => {
+    const IconComponent = pestIcons[pestName];
+    if (IconComponent) {
+      return <IconComponent className="w-10 h-10 text-primary" />;
+    }
+    // Default icon if none found
+    return <AntIcon className="w-10 h-10 text-primary" />;
+  };
+
   return (
     <div className="grid grid-cols-2 gap-4 mb-6">
       {(categories || []).map((category: PestCategory) => (
@@ -59,9 +69,7 @@ const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGrid
         >
           <CardContent className="flex flex-col items-center p-4">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-primary/30 mb-2 flex items-center justify-center border-2 border-primary/50">
-              <span className="text-4xl" aria-hidden="true">
-                {pestEmojis[category.name] || pestEmojis['Other']}
-              </span>
+              {getPestIcon(category.name)}
             </div>
             <span className="font-medium text-center">{category.name}</span>
           </CardContent>
@@ -75,9 +83,7 @@ const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGrid
       >
         <CardContent className="flex flex-col items-center p-4">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-green-200 mb-2 flex items-center justify-center border-2 border-primary/50">
-            <span className="text-4xl" aria-hidden="true">
-              {pestEmojis['Products']}
-            </span>
+            <Package className="w-10 h-10 text-primary" />
           </div>
           <div className="flex items-center gap-1 justify-center">
             <span className="font-medium">Get Products</span>
