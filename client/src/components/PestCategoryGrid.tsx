@@ -3,12 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PestCategory } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
+import { MapPin } from 'lucide-react';
 
 interface PestCategoryGridProps {
   onPestSelect: (pestName: string) => void;
+  onGetProductsClick?: () => void;
 }
 
-const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
+const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGridProps) => {
   const { data: categories, isLoading, error } = useQuery<PestCategory[]>({
     queryKey: ['/api/pest-categories'],
   });
@@ -21,7 +23,7 @@ const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
     'Stink Bugs': '🐞',
     'Rodents': '🐭',
     'Cockroaches': '🪳',
-    'Other': '🔍'
+    'Products': '🧰'
   };
 
   if (isLoading) {
@@ -66,18 +68,21 @@ const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
         </Card>
       ))}
       
-      {/* Other Pests option */}
+      {/* Get Products with Map Integration */}
       <Card
         className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-        onClick={() => onPestSelect('Other')}
+        onClick={onGetProductsClick}
       >
         <CardContent className="flex flex-col items-center p-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 mb-2 flex items-center justify-center border-2 border-gray-300">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-green-200 mb-2 flex items-center justify-center border-2 border-primary/50">
             <span className="text-4xl" aria-hidden="true">
-              {pestEmojis['Other']}
+              {pestEmojis['Products']}
             </span>
           </div>
-          <span className="font-medium text-center">Other Pests</span>
+          <div className="flex items-center gap-1 justify-center">
+            <span className="font-medium">Get Products</span>
+            <MapPin size={14} className="text-primary" />
+          </div>
         </CardContent>
       </Card>
     </div>

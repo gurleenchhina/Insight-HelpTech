@@ -119,16 +119,7 @@ const ProductCard = ({ product, expanded = false }: ProductCardProps) => {
             </TabsContent>
           </Tabs>
           
-          {/* View Full Label Button */}
-          {product.fullLabelLink && (
-            <Button 
-              variant="outline" 
-              className="w-full mt-4 text-center py-2 border border-primary text-primary rounded hover:bg-primary hover:text-white transition-colors"
-              onClick={() => window.open(product.fullLabelLink, '_blank')}
-            >
-              View Full Label
-            </Button>
-          )}
+
         </CardContent>
       )}
     </Card>
