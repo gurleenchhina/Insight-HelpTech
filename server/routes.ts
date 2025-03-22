@@ -26,6 +26,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api", (req: Request, res: Response) => {
     res.json({ message: "HelpTech API" });
   });
+  
+  // Get Google Maps API key
+  app.get("/api/maps-api-key", (req: Request, res: Response) => {
+    res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY || '' });
+  });
 
   // Get all pest categories
   app.get("/api/pest-categories", async (req: Request, res: Response) => {

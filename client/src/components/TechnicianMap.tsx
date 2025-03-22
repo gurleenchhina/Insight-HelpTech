@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Clock } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 
 const containerStyle = {
   width: '100%',
@@ -28,23 +29,35 @@ interface TechnicianWithDistance extends User {
 const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, userLocation }) => {
   const [selectedTechnician, setSelectedTechnician] = useState<TechnicianWithDistance | null>(null);
   const [techsWithDistance, setTechsWithDistance] = useState<TechnicianWithDistance[]>([]);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
+  
+  // Fetch Google Maps API key from backend
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      try {
+        const response = await apiRequest({ url: '/api/maps-api-key' });
+        if (response.ok) {
+          const data = await response.json();
+          setGoogleMapsApiKey(data.apiKey);
+        } else {
+          console.error('Failed to fetch Google Maps API key');
+        }
+      } catch (error) {
+        console.error('Error fetching Google Maps API key:', error);
+      }
+    };
+    
+    fetchApiKey();
+  }, []);
   
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
+    googleMapsApiKey: googleMapsApiKey
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
-    calculateDistances();
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    setMap(null);
-  }, []);
-
+  // Define the calculateDistances function first
   const calculateDistances = async () => {
     if (!window.google || !window.google.maps || technicians.length === 0) return;
 
@@ -78,6 +91,15 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
       }
     );
   };
+
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    setMap(map);
+    calculateDistances();
+  }, [technicians, userLocation]);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
 
   const center = {
     lat: userLocation.latitude,
