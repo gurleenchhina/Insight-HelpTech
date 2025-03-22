@@ -410,20 +410,29 @@ export class MemStorage implements IStorage {
         advice: "Apply to exterior surfaces where spiders are present. Focus on protected areas like eaves, window frames, and doorways."
       },
       
-      // Wasps
+      // Wasps Interior
+      {
+        id: this.currentRecommendationId++,
+        pestCategoryId: 3, // Wasps
+        productId: 6, // Drione Insecticide Dust
+        location: "interior",
+        advice: "For wasps inside the house, use Drione Insecticide Dust in wall voids, attics, and other areas where wasps may be nesting. TIP: Consider placing wasp traps outside to help prevent future infestations."
+      },
+      
+      // Wasps Exterior
       {
         id: this.currentRecommendationId++,
         pestCategoryId: 3, // Wasps
         productId: 7, // KONK 407
         location: "exterior",
-        advice: "For active nests, spray directly at the nest entrance from a safe distance. Apply in the evening when wasps are less active."
+        advice: "For active nests, spray directly at the nest entrance from a safe distance. Apply in the evening when wasps are less active. TIP: Place wasp traps in areas with high wasp activity to reduce populations."
       },
       {
         id: this.currentRecommendationId++,
         pestCategoryId: 3, // Wasps
         productId: 6, // Drione Insecticide Dust
         location: "exterior",
-        advice: "For preventative treatment, apply dust in voids, cracks and crevices where wasps may nest, particularly under eaves and in wall voids."
+        advice: "For preventative treatment, apply dust in voids, cracks and crevices where wasps may nest, particularly under eaves and in wall voids. TIP: Install wasp traps around the property perimeter for additional control."
       },
       
       // Stinkbugs
@@ -471,14 +480,14 @@ export class MemStorage implements IStorage {
         pestCategoryId: 6, // Centipedes
         productId: 1, // SECLIRA WSG
         location: "interior",
-        advice: "Apply SECLIRA WSG in areas where centipedes are active, focusing on damp areas, basements, and crawl spaces. Use glue traps in conjunction with sprays for best results."
+        advice: "Apply SECLIRA WSG in areas where centipedes are active, focusing on damp areas, basements, and crawl spaces. Pay special attention to baseboards and wall-floor junctions for thorough coverage."
       },
       {
         id: this.currentRecommendationId++,
         pestCategoryId: 6, // Centipedes
         productId: 11, // Glue Traps
         location: "interior",
-        advice: "Place glue traps along baseboards, in corners, and near entry points. Check and replace regularly for effective monitoring and control."
+        advice: "Place glue traps along baseboards, in corners, and near entry points where centipedes travel. Check and replace regularly - these are effective for monitoring and providing immediate control."
       },
       
       // Centipedes Exterior
@@ -487,7 +496,7 @@ export class MemStorage implements IStorage {
         pestCategoryId: 6, // Centipedes
         productId: 4, // Suspend Polyzone
         location: "exterior",
-        advice: "Apply to foundation and perimeter up to 3 feet from the structure. Focus on entry points, areas with excess moisture, and ground-level hiding spots."
+        advice: "Apply to foundation and perimeter up to 3 feet from the structure. Focus on entry points, areas with excess moisture, and ground-level hiding spots. Remove leaf litter, mulch, and debris from foundation area."
       },
       
       // Millipedes Interior
@@ -496,14 +505,14 @@ export class MemStorage implements IStorage {
         pestCategoryId: 7, // Millipedes
         productId: 1, // SECLIRA WSG
         location: "interior",
-        advice: "Apply SECLIRA WSG in areas where millipedes are found, focusing on entry points, basements, and areas with high moisture. Use glue traps for monitoring."
+        advice: "Apply SECLIRA WSG where millipedes are found, focusing on entry points, basements, and areas with high moisture. Recommend dehumidifiers in basements to reduce moisture that attracts millipedes."
       },
       {
         id: this.currentRecommendationId++,
         pestCategoryId: 7, // Millipedes
         productId: 11, // Glue Traps
         location: "interior",
-        advice: "Place glue traps in corners, along baseboards, and near entry points where millipedes are active. Monitor and replace regularly."
+        advice: "Place glue traps in corners, along baseboards, and near entry points where millipedes are active. Monitor and replace regularly. TIP: Seal cracks and crevices around foundation to prevent entry."
       },
       
       // Millipedes Exterior
@@ -512,7 +521,7 @@ export class MemStorage implements IStorage {
         pestCategoryId: 7, // Millipedes
         productId: 4, // Suspend Polyzone
         location: "exterior",
-        advice: "Apply as a barrier treatment around the foundation and in areas with mulch, leaf litter, and other organic debris where millipedes may shelter."
+        advice: "Apply as a barrier treatment around the foundation and in areas with mulch, leaf litter, and other organic debris where millipedes may shelter. TIP: Create a dry zone around foundation by removing organic matter."
       },
       
       // Boxelder Bugs Interior
