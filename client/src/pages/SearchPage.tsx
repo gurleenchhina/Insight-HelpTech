@@ -44,10 +44,6 @@ const SearchPage = () => {
 
   return (
     <Container className="mx-auto p-4">
-      <div className="text-center mb-6">
-        <p className="text-neutral-dark">Already called service manager 10 times today? Give them a break, I can help!</p>
-      </div>
-      
       <SearchInterface onSearch={handleSearch} onImageSearch={handleImageSearch} />
       
       {isSearching && (
