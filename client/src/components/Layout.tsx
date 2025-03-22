@@ -10,12 +10,14 @@ interface LayoutProps {
 
 const Layout = ({ children, activeTab, onTabChange }: LayoutProps) => {
   return (
-    <div className="flex flex-col h-screen bg-neutral-lightest">
+    <div className="flex flex-col min-h-screen max-h-screen overflow-hidden bg-background">
       <Header />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pb-16">
         {children}
       </main>
-      <TabNavigation activeTab={activeTab} onTabChange={onTabChange} />
+      <div className="fixed bottom-0 left-0 right-0">
+        <TabNavigation activeTab={activeTab} onTabChange={onTabChange} />
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Search, Bug, Settings } from "lucide-react";
 
 interface TabNavigationProps {
   activeTab: string;
@@ -7,39 +8,42 @@ interface TabNavigationProps {
 
 const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
   return (
-    <nav className="bg-white border-t border-neutral-light">
-      <div className="flex justify-around">
+    <nav className="bg-white dark:bg-zinc-950 border-t border-muted sticky bottom-0 left-0 right-0 z-50">
+      <div className="flex justify-around items-center w-full h-16">
         <Button
           variant="ghost"
-          className={`flex flex-col items-center py-2 px-4 rounded-none ${
-            activeTab === 'search' ? 'text-primary font-medium' : 'text-neutral-medium'
+          size="lg"
+          className={`flex flex-col items-center justify-center h-16 w-full rounded-none ${
+            activeTab === 'search' ? 'text-primary' : 'text-muted-foreground'
           }`}
           onClick={() => onTabChange('search')}
         >
-          <span className="material-icons">search</span>
-          <span className="text-xs mt-1">Search</span>
+          <Search className="h-5 w-5 mb-1" />
+          <span className="text-xs font-medium">Search</span>
         </Button>
         
         <Button
           variant="ghost"
-          className={`flex flex-col items-center py-2 px-4 rounded-none ${
-            activeTab === 'pests' ? 'text-primary' : 'text-neutral-medium'
+          size="lg"
+          className={`flex flex-col items-center justify-center h-16 w-full rounded-none ${
+            activeTab === 'pests' ? 'text-primary' : 'text-muted-foreground'
           }`}
           onClick={() => onTabChange('pests')}
         >
-          <span className="material-icons">pest_control</span>
-          <span className="text-xs mt-1">Pests</span>
+          <Bug className="h-5 w-5 mb-1" />
+          <span className="text-xs font-medium">Pests</span>
         </Button>
         
         <Button
           variant="ghost"
-          className={`flex flex-col items-center py-2 px-4 rounded-none ${
-            activeTab === 'settings' ? 'text-primary' : 'text-neutral-medium'
+          size="lg"
+          className={`flex flex-col items-center justify-center h-16 w-full rounded-none ${
+            activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground'
           }`}
           onClick={() => onTabChange('settings')}
         >
-          <span className="material-icons">settings</span>
-          <span className="text-xs mt-1">Settings</span>
+          <Settings className="h-5 w-5 mb-1" />
+          <span className="text-xs font-medium">Settings</span>
         </Button>
       </div>
     </nav>
