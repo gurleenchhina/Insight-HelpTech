@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Phone, MapPin, Clock, UserRound, PackageCheck, CircleUser } from 'lucide-react';
+import { Phone, MapPin, Clock, UserRound, PackageCheck, CircleUser, Navigation } from 'lucide-react';
+import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
 
 interface TechnicianMapProps {
   technicians: User[];
@@ -18,9 +19,37 @@ interface TechnicianWithDistance extends User {
   travelTime?: string;
 }
 
+const containerStyle = {
+  width: '100%',
+  height: '400px'
+};
+
 const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, userLocation }) => {
   const [selectedTechnician, setSelectedTechnician] = useState<TechnicianWithDistance | null>(null);
   const [techsWithDistance, setTechsWithDistance] = useState<TechnicianWithDistance[]>([]);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [mapRef, setMapRef] = useState<google.maps.Map | null>(null);
+  const [openInfoWindowId, setOpenInfoWindowId] = useState<number | null>(null);
+
+  // Load Google Maps API with API key from endpoint
+  const [apiKey, setApiKey] = useState<string>('');
+  
+  useEffect(() => {
+    // Fetch the API key from the server
+    fetch('/api/maps-api-key')
+      .then(response => response.json())
+      .then(data => {
+        setApiKey(data.apiKey);
+      })
+      .catch(error => {
+        console.error('Error fetching Google Maps API key:', error);
+      });
+  }, []);
+  
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: apiKey
+  });
 
   useEffect(() => {
     // Calculate distances between user and technicians
@@ -86,6 +115,42 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
     return deg * (Math.PI / 180);
   };
 
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    setMapRef(map);
+  }, []);
+
+  const handleMarkerClick = (tech: TechnicianWithDistance) => {
+    setSelectedTechnician(tech);
+    setOpenInfoWindowId(tech.id);
+    
+    if (mapRef && tech.location) {
+      const techLocation = tech.location as { latitude: number, longitude: number };
+      mapRef.panTo({ lat: techLocation.latitude, lng: techLocation.longitude });
+    }
+  };
+  
+  const getDirections = () => {
+    if (!selectedTechnician || !selectedTechnician.location) return;
+    
+    const directionsService = new google.maps.DirectionsService();
+    const techLocation = selectedTechnician.location as { latitude: number, longitude: number };
+    
+    directionsService.route(
+      {
+        origin: { lat: userLocation.latitude, lng: userLocation.longitude },
+        destination: { lat: techLocation.latitude, lng: techLocation.longitude },
+        travelMode: google.maps.TravelMode.DRIVING
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+        } else {
+          console.error(`Error fetching directions: ${status}`);
+        }
+      }
+    );
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -93,56 +158,96 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
           <CardTitle>Nearby Technicians</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Simple visual representation of technicians */}
-          <div className="relative h-[200px] bg-muted rounded-lg overflow-hidden mb-4 p-4 border border-border">
-            {/* Current user */}
-            <div className="absolute left-1/2 bottom-4 transform -translate-x-1/2 flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-1">
-                <UserRound size={20} />
-              </div>
-              <span className="text-xs font-medium">You</span>
-            </div>
-
-            {/* Technicians relative positioning */}
-            {techsWithDistance.map((tech, index) => {
-              if (!tech.distance) return null;
-              
-              // Calculate position based on simple layout
-              // First technician is always to the right, subsequent ones are arranged in a semicircle
-              const angle = (index * 45) - 45; // Spread from -45 to 135 degrees
-              const normalizedDistance = Math.min(tech.distance, 5) / 5; // Max display distance is 5km
-              const radius = 80 * normalizedDistance; // Max radius of 80px
-              
-              // Calculate x,y coords
-              const x = radius * Math.cos(angle * Math.PI / 180);
-              const y = -radius * Math.sin(angle * Math.PI / 180); // Negative since y increases downward in CSS
-              
-              const isSelected = selectedTechnician?.id === tech.id;
-              
-              return (
-                <div 
-                  key={tech.id}
-                  className={`absolute left-1/2 top-1/2 flex flex-col items-center cursor-pointer transition-all ${isSelected ? 'scale-110' : ''}`}
-                  style={{ 
-                    transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                    zIndex: isSelected ? 10 : 1
+          {/* Google Maps Display */}
+          {isLoaded ? (
+            <div className="mb-4">
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={{ lat: userLocation.latitude, lng: userLocation.longitude }}
+                zoom={10}
+                onLoad={onMapLoad}
+                options={{
+                  zoomControl: true,
+                  mapTypeControl: false,
+                  streetViewControl: false,
+                  fullscreenControl: true,
+                }}
+              >
+                {/* User location marker */}
+                <Marker
+                  position={{ 
+                    lat: userLocation.latitude, 
+                    lng: userLocation.longitude 
                   }}
-                  onClick={() => setSelectedTechnician(tech)}
-                >
-                  <div className={`w-10 h-10 rounded-full ${isSelected ? 'bg-destructive' : 'bg-secondary'} flex items-center justify-center text-primary-foreground mb-1 border-2 ${isSelected ? 'border-primary' : 'border-transparent'}`}>
-                    <CircleUser size={20} />
-                  </div>
-                  <span className="text-xs font-medium bg-background/80 px-1 rounded">{tech.distance.toFixed(1)}km</span>
-                </div>
-              );
-            })}
-
-            {/* Distance indicators */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[80px] h-[80px] rounded-full border border-dashed border-border/50 opacity-30"></div>
-              <div className="w-[160px] h-[160px] rounded-full border border-dashed border-border/50 opacity-30"></div>
+                  icon={{
+                    url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                    scaledSize: new google.maps.Size(40, 40)
+                  }}
+                  zIndex={1000}
+                />
+                
+                {/* Technician markers */}
+                {techsWithDistance.map((tech) => {
+                  const techLocation = tech.location as { latitude: number, longitude: number };
+                  if (!techLocation || !techLocation.latitude || !techLocation.longitude) return null;
+                  
+                  const isSelected = selectedTechnician?.id === tech.id;
+                  
+                  return (
+                    <Marker
+                      key={tech.id}
+                      position={{ 
+                        lat: techLocation.latitude, 
+                        lng: techLocation.longitude 
+                      }}
+                      onClick={() => handleMarkerClick(tech)}
+                      icon={{
+                        url: isSelected 
+                          ? "https://maps.google.com/mapfiles/ms/icons/green-dot.png" 
+                          : "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        scaledSize: new google.maps.Size(isSelected ? 40 : 30, isSelected ? 40 : 30)
+                      }}
+                      animation={isSelected ? google.maps.Animation.BOUNCE : undefined}
+                    >
+                      {openInfoWindowId === tech.id && (
+                        <InfoWindow
+                          position={{
+                            lat: techLocation.latitude,
+                            lng: techLocation.longitude
+                          }}
+                          onCloseClick={() => setOpenInfoWindowId(null)}
+                        >
+                          <div className="p-2 max-w-[200px]">
+                            <h3 className="font-bold text-sm">{tech.firstName} {tech.lastName}</h3>
+                            <p className="text-xs">@{tech.username}</p>
+                            {tech.distance && (
+                              <p className="text-xs mt-1">{tech.distance.toFixed(1)} km away</p>
+                            )}
+                            {tech.travelTime && (
+                              <p className="text-xs">{tech.travelTime} drive</p>
+                            )}
+                            <p className="text-xs mt-1">
+                              Qty: {(tech.inventory as any)[productId.toString()] || 0}
+                            </p>
+                          </div>
+                        </InfoWindow>
+                      )}
+                    </Marker>
+                  );
+                })}
+                
+                {/* Display directions if available */}
+                {directions && <DirectionsRenderer directions={directions} />}
+              </GoogleMap>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gray-100 h-[400px] flex items-center justify-center rounded-lg mb-4">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-3"></div>
+                <p>Loading Google Maps...</p>
+              </div>
+            </div>
+          )}
 
           {/* Selected technician details */}
           {selectedTechnician && (
@@ -170,13 +275,19 @@ const TechnicianMap: React.FC<TechnicianMapProps> = ({ technicians, productId, u
                       )}
                     </div>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <div className="flex flex-col items-center">
                       <PackageCheck size={24} className="text-primary mb-1" />
                       <Badge variant="outline" className="mt-1">
                         Quantity: {(selectedTechnician.inventory as any)[productId.toString()] || 0}
                       </Badge>
                     </div>
+                    <button 
+                      className="flex items-center gap-1 text-xs bg-primary text-white px-2 py-1 rounded-md mt-2"
+                      onClick={getDirections}
+                    >
+                      <Navigation size={12} /> Get Directions
+                    </button>
                   </div>
                 </div>
               </CardContent>
