@@ -9,6 +9,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { Product, User } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Navigation, Phone, AlertCircle } from 'lucide-react';
+import TechnicianMap from './TechnicianMap';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface InventoryCheckProps {
   userId: number;
@@ -223,7 +225,7 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
         </CardContent>
       </Card>
       
-      {selectedProductId && (
+      {selectedProductId && userLocation && (
         <Card>
           <CardHeader>
             <CardTitle>
@@ -262,37 +264,54 @@ const InventoryCheck: React.FC<InventoryCheckProps> = ({
                 No technicians found with this product in the selected radius
               </p>
             ) : (
-              <div className="space-y-3">
-                {nearbyTechs.map((tech) => (
-                  <div key={tech.id} className="border rounded-lg p-3 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{tech.firstName} {tech.lastName}</p>
-                        <p className="text-sm text-muted-foreground">ID: {tech.techId}</p>
-                      </div>
-                      <Badge variant="outline">
-                        {(tech.inventory as Record<string, number>)[selectedProductId.toString()]} units
-                      </Badge>
-                    </div>
-                    <div className="flex space-x-2">
-                      {tech.location && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => openMapsApp(
-                            (tech.location as any).latitude, 
-                            (tech.location as any).longitude
+              <Tabs defaultValue="map" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="map">Map View</TabsTrigger>
+                  <TabsTrigger value="list">List View</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="map" className="mt-0">
+                  <TechnicianMap 
+                    technicians={nearbyTechs as User[]}
+                    productId={selectedProductId}
+                    userLocation={userLocation}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="list" className="mt-0">
+                  <div className="space-y-3">
+                    {nearbyTechs.map((tech) => (
+                      <div key={tech.id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">{tech.firstName} {tech.lastName}</p>
+                            <p className="text-sm text-muted-foreground">ID: {tech.techId}</p>
+                          </div>
+                          <Badge variant="outline">
+                            {(tech.inventory as Record<string, number>)[selectedProductId.toString()]} units
+                          </Badge>
+                        </div>
+                        <div className="flex space-x-2">
+                          {tech.location && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => openMapsApp(
+                                (tech.location as any).latitude, 
+                                (tech.location as any).longitude
+                              )}
+                              className="flex items-center"
+                            >
+                              <Navigation className="h-4 w-4 mr-1" />
+                              Directions
+                            </Button>
                           )}
-                          className="flex items-center"
-                        >
-                          <Navigation className="h-4 w-4 mr-1" />
-                          Directions
-                        </Button>
-                      )}
-                    </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
