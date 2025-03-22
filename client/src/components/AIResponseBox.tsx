@@ -7,6 +7,33 @@ interface AIResponseBoxProps {
   onGetProducts: () => void;
 }
 
+// Function to clean up text and remove unwanted symbols or formatting
+const cleanupText = (text: string | undefined): string => {
+  if (!text) return '';
+  
+  // Remove JSON formatting symbols, brackets, quotes, etc.
+  let cleaned = text
+    .replace(/[{}[\]"]+/g, '') // Remove brackets and quotes
+    .replace(/\\n/g, ' ') // Replace escaped newlines with spaces
+    .replace(/\\/g, '') // Remove backslashes
+    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+    .replace(/boxed|recommendation:|pestType:|products:|applicationAdvice:|primary:|alternative:/gi, '') // Remove field labels
+    .replace(/^\s*[-*•:]+\s*/gm, '') // Remove bullet points at the start of lines
+    .trim();
+  
+  // Capitalize the first letter if it's not already capitalized
+  if (cleaned.length > 0 && cleaned[0] === cleaned[0].toLowerCase()) {
+    cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
+  }
+  
+  // Add a period at the end if there isn't one already
+  if (cleaned.length > 0 && !cleaned.match(/[.!?]$/)) {
+    cleaned += '.';
+  }
+  
+  return cleaned;
+};
+
 const AIResponseBox = ({ response, onGetProducts }: AIResponseBoxProps) => {
   return (
     <Card className="mb-6 bg-white rounded-lg shadow-md">
@@ -23,24 +50,24 @@ const AIResponseBox = ({ response, onGetProducts }: AIResponseBoxProps) => {
       </CardHeader>
       <CardContent className="p-4">
         <div className="prose text-sm">
-          <p>{response.recommendation}</p>
+          <p>{cleanupText(response.recommendation)}</p>
           
           {response.products && (response.products.primary || response.products.alternative) && (
             <>
               <h4 className="text-primary font-medium mt-3">Recommended Products:</h4>
               <ol className="list-decimal list-inside">
                 {response.products.primary && (
-                  <li><strong>Primary Option:</strong> {response.products.primary}</li>
+                  <li><strong>Primary Option:</strong> {cleanupText(response.products.primary)}</li>
                 )}
                 {response.products.alternative && (
-                  <li><strong>Alternative:</strong> {response.products.alternative}</li>
+                  <li><strong>Alternative:</strong> {cleanupText(response.products.alternative)}</li>
                 )}
               </ol>
             </>
           )}
           
           {response.applicationAdvice && (
-            <p className="mt-2">{response.applicationAdvice}</p>
+            <p className="mt-2">{cleanupText(response.applicationAdvice)}</p>
           )}
         </div>
         
