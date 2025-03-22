@@ -16,6 +16,7 @@ import {
   speechToTextRequestSchema
 } from "@shared/schema";
 import { processTextSearch, processImageSearch } from "./lib/openai";
+import { processAISearch as processDeepSeekSearch, processImageSearch as processDeepSeekImageSearch } from "./lib/deepseekAI";
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
@@ -63,8 +64,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save the search query to history
       await storage.addSearchQuery(query);
       
-      // Process with OpenAI
-      const result = await processTextSearch(query);
+      // Process with DeepSeek AI
+      const result = await processDeepSeekSearch(query);
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -79,8 +80,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { image } = aiImageSearchRequestSchema.parse(req.body);
       
-      // Process with OpenAI
-      const result = await processImageSearch(image);
+      // Process with DeepSeek AI
+      const result = await processDeepSeekImageSearch(image);
       res.json(result);
     } catch (error) {
       if (error instanceof ZodError) {
