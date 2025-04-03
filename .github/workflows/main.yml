@@ -18,12 +18,16 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '20'
+        cache: 'npm'
         
     - name: Install Dependencies
       run: npm install
       
+    - name: Type Check
+      run: npm run check
+      
+    - name: Run Tests
+      run: npm run test
+      
     - name: Build
       run: npm run build
-      
-    - name: Test
-      run: npm run test
