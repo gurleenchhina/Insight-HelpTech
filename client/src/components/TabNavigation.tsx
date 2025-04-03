@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Search, Bug, Settings } from "lucide-react";
+import { Search, Bug } from "lucide-react";
 
 interface TabNavigationProps {
   activeTab: string;
@@ -32,18 +32,6 @@ const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
         >
           <Bug className="h-5 w-5 mb-1" />
           <span className="text-xs font-medium">Pests</span>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="lg"
-          className={`flex flex-col items-center justify-center h-16 w-full rounded-none ${
-            activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground'
-          }`}
-          onClick={() => onTabChange('settings')}
-        >
-          <Settings className="h-5 w-5 mb-1" />
-          <span className="text-xs font-medium">Settings</span>
         </Button>
       </div>
     </nav>

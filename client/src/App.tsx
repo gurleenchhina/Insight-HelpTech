@@ -7,10 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/HomePage";
 import SearchPage from "@/pages/SearchPage";
-import SettingsPage from "@/pages/SettingsPage";
 import Layout from "@/components/Layout";
 import LoadingScreen from '@/components/LoadingScreen';
-import { SettingsState, User } from '@/lib/types';
+import { User } from '@/lib/types';
 
 function App() {
   const { toast } = useToast();
@@ -36,7 +35,8 @@ function App() {
     lastActive: null
   });
   
-  const [settings, setSettings] = useState<SettingsState>({
+  // Create a default settings object
+  const [settings, setSettings] = useState({
     darkMode: false,
     textSize: 3,
     brightness: 5,
@@ -44,33 +44,12 @@ function App() {
     ppeReminders: true
   });
 
-  // Update a single setting
-  const updateSetting = async (key: keyof SettingsState, value: any) => {
-    if (!user) return;
-    
-    // Update local state
+  // Basic settings update function (simplified)
+  const updateSetting = async (key: string, value: any) => {
     setSettings(prev => ({
       ...prev,
       [key]: value
     }));
-
-    // Update server if user is logged in
-    try {
-      await apiRequest({
-        url: `/api/user/${user.id}/settings`,
-        method: 'POST',
-        body: JSON.stringify({ [key]: value }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-    } catch (error) {
-      toast({
-        title: "Settings Update Failed",
-        description: "Could not save your settings. Please try again.",
-        variant: "destructive"
-      });
-    }
   };
 
   // Update inventory
@@ -141,28 +120,6 @@ function App() {
             <Route path="/">
               {activeTab === 'pests' && <HomePage />}
               {activeTab === 'search' && <SearchPage />}
-              {activeTab === 'settings' && (
-                <SettingsPage 
-                  settings={settings} 
-                  updateSetting={updateSetting}
-                  user={user}
-                  onLogout={() => {
-                    // Just reset settings without actual logout
-                    setSettings({
-                      darkMode: false,
-                      textSize: 3,
-                      brightness: 5,
-                      safetyAlerts: true,
-                      ppeReminders: true
-                    });
-                    toast({
-                      title: "Settings Reset",
-                      description: "Settings have been reset to default."
-                    });
-                  }}
-                  onInventoryUpdate={updateInventory}
-                />
-              )}
             </Route>
             <Route path="*">
               <NotFound />
