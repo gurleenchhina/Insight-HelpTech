@@ -9,10 +9,8 @@ import {
   pestCategoryResponseSchema,
   loginSchema,
   signupSchema,
-  updateLocationSchema,
   updateInventorySchema,
   updateSettingsSchema,
-  nearbyTechRequestSchema,
   speechToTextRequestSchema
 } from "@shared/schema";
 import { processAISearch, processImageSearch } from "./lib/openRouterAI";
@@ -27,10 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "HelpTech API" });
   });
   
-  // Get Google Maps API key
-  app.get("/api/maps-api-key", (req: Request, res: Response) => {
-    res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY || '' });
-  });
+  // Maps API endpoint removed
 
   // Get all pest categories
   app.get("/api/pest-categories", async (req: Request, res: Response) => {
@@ -218,24 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update user location
-  app.post("/api/user/:userId/location", async (req: Request, res: Response) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      const { latitude, longitude } = updateLocationSchema.parse(req.body);
-      
-      const updatedUser = await storage.updateUserLocation(userId, latitude, longitude);
-      
-      // Don't send the pin in the response
-      const { pin: _, ...userWithoutPin } = updatedUser;
-      res.json(userWithoutPin);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update location", error: error instanceof Error ? error.message : String(error) });
-    }
-  });
+  // Location tracking endpoint removed
   
   // Update user inventory
   app.post("/api/user/:userId/inventory", async (req: Request, res: Response) => {
@@ -275,27 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get nearby technicians with product
-  app.post("/api/nearby-technicians", async (req: Request, res: Response) => {
-    try {
-      const { productId, latitude, longitude, radiusKm } = nearbyTechRequestSchema.parse(req.body);
-      
-      const techs = await storage.getNearbyTechnicians(productId, latitude, longitude, radiusKm);
-      
-      // Don't send the pin in the response
-      const techsWithoutPin = techs.map(tech => {
-        const { pin: _, ...techWithoutPin } = tech;
-        return techWithoutPin;
-      });
-      
-      res.json(techsWithoutPin);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to find nearby technicians", error: error instanceof Error ? error.message : String(error) });
-    }
-  });
+  // Nearby technicians endpoint removed
   
   // Voice to text processing
   app.post("/api/speech-to-text", async (req: Request, res: Response) => {

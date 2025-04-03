@@ -107,10 +107,7 @@ export const signupSchema = z.object({
   techId: z.string().optional(),
 });
 
-export const updateLocationSchema = z.object({
-  latitude: z.number(),
-  longitude: z.number(),
-});
+// Location schema removed
 
 export const updateInventorySchema = z.object({
   productId: z.number(),
@@ -125,12 +122,7 @@ export const updateSettingsSchema = z.object({
   textSize: z.number().optional(),
 });
 
-export const nearbyTechRequestSchema = z.object({
-  productId: z.number(),
-  latitude: z.number(),
-  longitude: z.number(),
-  radiusKm: z.number().default(10),
-});
+// Nearby technician schema removed
 
 export const speechToTextRequestSchema = z.object({
   audioBase64: z.string(),
@@ -148,9 +140,7 @@ export type RecommendationsRequest = z.infer<typeof recommendationsRequestSchema
 export type AISearchRequest = z.infer<typeof aiSearchRequestSchema>;
 export type AIImageSearchRequest = z.infer<typeof aiImageSearchRequestSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
-export type UpdateLocationRequest = z.infer<typeof updateLocationSchema>;
 export type UpdateInventoryRequest = z.infer<typeof updateInventorySchema>;
 export type UpdateSettingsRequest = z.infer<typeof updateSettingsSchema>;
-export type NearbyTechRequest = z.infer<typeof nearbyTechRequestSchema>;
 export type SpeechToTextRequest = z.infer<typeof speechToTextRequestSchema>;
 export type SignupRequest = z.infer<typeof signupSchema>;
