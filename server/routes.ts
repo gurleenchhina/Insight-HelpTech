@@ -68,7 +68,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "No recommendations found for the specified pest and location" });
       }
       
-      res.json(recommendations.map(product => pestProductResponseSchema.parse(product)));
+      res.json(recommendations.map(product => {
+        // For exterior recommendations, always set requiresVacancy to false
+        if (location === 'exterior') {
+          return pestProductResponseSchema.parse({
+            ...product,
+            requiresVacancy: false
+          });
+        }
+        return pestProductResponseSchema.parse(product);
+      }));
     } catch (error) {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid request data", errors: error.errors });

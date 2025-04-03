@@ -369,14 +369,16 @@ export class MemStorage implements IStorage {
         pestCategoryId: 1, // Ants
         productId: 4, // Suspend Polyzone
         location: "exterior",
-        advice: "Apply as a barrier treatment around the perimeter of structures. Spray to a height of 2-3 feet on the foundation and extend outward 2-3 feet."
+        advice: "Apply as a barrier treatment around the perimeter of structures. Spray to a height of 2-3 feet on the foundation and extend outward 2-3 feet.",
+        requiresVacancy: false
       },
       {
         id: this.currentRecommendationId++,
         pestCategoryId: 1, // Ants
         productId: 5, // Temprid SC
         location: "exterior",
-        advice: "Use as an alternative to Suspend Polyzone for exterior perimeter treatments. Apply to foundation up to 3 feet and extend outward 2-10 feet."
+        advice: "Use as an alternative to Suspend Polyzone for exterior perimeter treatments. Apply to foundation up to 3 feet and extend outward 2-10 feet.",
+        requiresVacancy: false
       },
       
       // Spiders Interior
