@@ -25,12 +25,26 @@ A real-time training dashboard for pest control technicians built with Next.js a
 
 ## Getting Started
 
-1. Install dependencies:
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd <your-repo-name>
+```
+
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Start the development server:
+3. Set up environment variables:
+- Create a `.env` file in the root directory
+- Add required environment variables:
+  ```
+  GOOGLE_MAPS_API_KEY=your_api_key
+  WEBSOCKET_URL=your_websocket_url
+  ```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
@@ -46,11 +60,13 @@ The application will be available at `http://localhost:5000`
 └── src/             # Next.js application
 ```
 
-## Environment Variables
+## Deployment
 
-Required environment variables:
-- `GOOGLE_MAPS_API_KEY`: Google Maps API key
-- `WEBSOCKET_URL`: WebSocket server URL
+This project is hosted on Replit. To deploy:
+
+1. Push your changes to GitHub
+2. Sync with Replit
+3. Use Replit's deployment feature to publish
 
 ## License
 
