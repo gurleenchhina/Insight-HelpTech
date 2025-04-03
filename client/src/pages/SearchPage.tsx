@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 const SearchPage = () => {
-  const { searchWithAI, searchWithImage, getRecentSearches, getRecommendations } = usePestControl();
+  const { searchWithAI, getRecentSearches, getRecommendations } = usePestControl();
   const [searchResponse, setSearchResponse] = useState<AISearchResponse | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
@@ -18,18 +18,6 @@ const SearchPage = () => {
     setIsSearching(true);
     try {
       const response = await searchWithAI(query);
-      if (response) {
-        setSearchResponse(response);
-      }
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleImageSearch = async (base64Image: string) => {
-    setIsSearching(true);
-    try {
-      const response = await searchWithImage(base64Image);
       if (response) {
         setSearchResponse(response);
       }
@@ -82,7 +70,7 @@ const SearchPage = () => {
     <Container className="mx-auto p-4">
       <div className="flex flex-col items-center justify-center min-h-[50vh]">
         <div className="w-full max-w-xl">
-          <SearchInterface onSearch={handleSearch} onImageSearch={handleImageSearch} />
+          <SearchInterface onSearch={handleSearch} />
         </div>
       </div>
       

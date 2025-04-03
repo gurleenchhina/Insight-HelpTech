@@ -10,19 +10,36 @@ import SearchPage from "@/pages/SearchPage";
 import SettingsPage from "@/pages/SettingsPage";
 import Layout from "@/components/Layout";
 import LoadingScreen from '@/components/LoadingScreen';
-import UserAuth from '@/components/UserAuth';
-import AutoLocationTracker from '@/components/AutoLocationTracker';
 import { SettingsState, User } from '@/lib/types';
 
 function App() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('search');
-  const [user, setUser] = useState<User | null>(null);
+  
+  // Create a default user instead of requiring login
+  const [user, setUser] = useState<User>({
+    id: 1,
+    techId: "default",
+    username: "user",
+    firstName: "Default",
+    lastName: "User",
+    location: { latitude: 0, longitude: 0 },
+    inventory: {},
+    settings: {
+      darkMode: false,
+      textSize: 3,
+      brightness: 5,
+      safetyAlerts: true,
+      ppeReminders: true
+    },
+    lastActive: null
+  });
+  
   const [settings, setSettings] = useState<SettingsState>({
     darkMode: false,
     textSize: 3,
-    brightness: 5, // Brightness setting (not currently used)
+    brightness: 5,
     safetyAlerts: true,
     ppeReminders: true
   });
@@ -84,39 +101,12 @@ function App() {
     }
   };
 
-  // Handle successful login
-  const handleLoginSuccess = (loggedInUser: User) => {
-    setUser(loggedInUser);
-    
-    // Set user settings from their profile
-    if (loggedInUser.settings) {
-      setSettings(loggedInUser.settings);
+  // Initialize settings from user profile
+  useEffect(() => {
+    if (user?.settings) {
+      setSettings(user.settings);
     }
-
-    toast({
-      title: "Login Successful",
-      description: `Welcome back, ${loggedInUser.firstName}!`,
-    });
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    setUser(null);
-    
-    // Reset to default settings
-    setSettings({
-      darkMode: false,
-      textSize: 3,
-      brightness: 5, // Brightness setting (not currently used)
-      safetyAlerts: true,
-      ppeReminders: true
-    });
-
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
-  };
+  }, []);
 
   // Apply dark mode when settings change
   useEffect(() => {
@@ -140,32 +130,34 @@ function App() {
       {/* Loading Screen */}
       <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
       
-      {/* Login Screen or Main App */}
+      {/* Main App */}
       <div className={isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}>
-        {!user ? (
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <UserAuth onLoginSuccess={handleLoginSuccess} />
-          </div>
-        ) : (
-          <>
-            {/* Background location tracker (no UI) */}
-            <AutoLocationTracker user={user} />
-            
-            <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-              {activeTab === 'pests' && <HomePage />}
-              {activeTab === 'search' && <SearchPage />}
-              {activeTab === 'settings' && (
-                <SettingsPage 
-                  settings={settings} 
-                  updateSetting={updateSetting}
-                  user={user}
-                  onLogout={handleLogout}
-                  onInventoryUpdate={updateInventory}
-                />
-              )}
-            </Layout>
-          </>
-        )}
+        <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+          {activeTab === 'pests' && <HomePage />}
+          {activeTab === 'search' && <SearchPage />}
+          {activeTab === 'settings' && (
+            <SettingsPage 
+              settings={settings} 
+              updateSetting={updateSetting}
+              user={user}
+              onLogout={() => {
+                // Just reset settings without actual logout
+                setSettings({
+                  darkMode: false,
+                  textSize: 3,
+                  brightness: 5,
+                  safetyAlerts: true,
+                  ppeReminders: true
+                });
+                toast({
+                  title: "Settings Reset",
+                  description: "Settings have been reset to default."
+                });
+              }}
+              onInventoryUpdate={updateInventory}
+            />
+          )}
+        </Layout>
       </div>
       <Toaster />
     </QueryClientProvider>
