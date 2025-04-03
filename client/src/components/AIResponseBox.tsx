@@ -1,40 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { AISearchResponse } from "@/lib/types";
+import { cleanupText } from "@/lib/utils";
 
 interface AIResponseBoxProps {
   response: AISearchResponse;
-  onGetProductInfo: (productName: string) => void;
 }
 
-// Function to clean up text and remove unwanted symbols or formatting
-const cleanupText = (text: string | undefined): string => {
-  if (!text) return '';
-  
-  // Remove JSON formatting symbols, brackets, quotes, etc.
-  let cleaned = text
-    .replace(/[{}[\]"]+/g, '') // Remove brackets and quotes
-    .replace(/\\n/g, ' ') // Replace escaped newlines with spaces
-    .replace(/\\/g, '') // Remove backslashes
-    .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
-    .replace(/boxed|recommendation:|pestType:|products:|applicationAdvice:|primary:|alternative:/gi, '') // Remove field labels
-    .replace(/^\s*[-*•:]+\s*/gm, '') // Remove bullet points at the start of lines
-    .trim();
-  
-  // Capitalize the first letter if it's not already capitalized
-  if (cleaned.length > 0 && cleaned[0] === cleaned[0].toLowerCase()) {
-    cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
-  }
-  
-  // Add a period at the end if there isn't one already
-  if (cleaned.length > 0 && !cleaned.match(/[.!?]$/)) {
-    cleaned += '.';
-  }
-  
-  return cleaned;
-};
-
-const AIResponseBox = ({ response, onGetProductInfo }: AIResponseBoxProps) => {
+const AIResponseBox = ({ response }: AIResponseBoxProps) => {
   // Determine which product to show info for (primary is preferred)
   const getRecommendedProductName = (): string => {
     if (response.products?.primary) {
@@ -47,7 +20,7 @@ const AIResponseBox = ({ response, onGetProductInfo }: AIResponseBoxProps) => {
   };
 
   const productName = getRecommendedProductName();
-  
+
   return (
     <Card className="mb-6 bg-white rounded-lg shadow-md">
       <CardHeader className="p-4 pb-0">
@@ -64,7 +37,7 @@ const AIResponseBox = ({ response, onGetProductInfo }: AIResponseBoxProps) => {
       <CardContent className="p-4">
         <div className="prose text-sm">
           <p>{cleanupText(response.recommendation)}</p>
-          
+
           {response.products && (response.products.primary || response.products.alternative) && (
             <>
               <h4 className="text-primary font-medium mt-3">Recommended Products:</h4>
@@ -78,23 +51,13 @@ const AIResponseBox = ({ response, onGetProductInfo }: AIResponseBoxProps) => {
               </ol>
             </>
           )}
-          
+
           {response.applicationAdvice && (
             <p className="mt-2">{cleanupText(response.applicationAdvice)}</p>
           )}
         </div>
         
-        <div className="mt-4 flex">
-          {productName && (
-            <Button 
-              variant="outline" 
-              className="text-primary border border-primary rounded px-3 py-1 text-sm"
-              onClick={() => onGetProductInfo(productName)}
-            >
-              Get Product Info
-            </Button>
-          )}
-        </div>
+        {/* Removed Get Product Info Button */}
       </CardContent>
     </Card>
   );
