@@ -132,31 +132,42 @@ function App() {
       
       {/* Main App */}
       <div className={isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}>
-        <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-          {activeTab === 'pests' && <HomePage />}
-          {activeTab === 'search' && <SearchPage />}
-          {activeTab === 'settings' && (
-            <SettingsPage 
-              settings={settings} 
-              updateSetting={updateSetting}
-              user={user}
-              onLogout={() => {
-                // Just reset settings without actual logout
-                setSettings({
-                  darkMode: false,
-                  textSize: 3,
-                  brightness: 5,
-                  safetyAlerts: true,
-                  ppeReminders: true
-                });
-                toast({
-                  title: "Settings Reset",
-                  description: "Settings have been reset to default."
-                });
-              }}
-              onInventoryUpdate={updateInventory}
-            />
-          )}
+        <Layout activeTab={activeTab} onTabChange={(tab) => {
+          setActiveTab(tab);
+          // Reset the view to the main category page when switching tabs
+          window.history.pushState(null, '', '/');
+        }}>
+          <Switch>
+            <Route path="/">
+              {activeTab === 'pests' && <HomePage />}
+              {activeTab === 'search' && <SearchPage />}
+              {activeTab === 'settings' && (
+                <SettingsPage 
+                  settings={settings} 
+                  updateSetting={updateSetting}
+                  user={user}
+                  onLogout={() => {
+                    // Just reset settings without actual logout
+                    setSettings({
+                      darkMode: false,
+                      textSize: 3,
+                      brightness: 5,
+                      safetyAlerts: true,
+                      ppeReminders: true
+                    });
+                    toast({
+                      title: "Settings Reset",
+                      description: "Settings have been reset to default."
+                    });
+                  }}
+                  onInventoryUpdate={updateInventory}
+                />
+              )}
+            </Route>
+            <Route path="*">
+              <NotFound />
+            </Route>
+          </Switch>
         </Layout>
       </div>
       <Toaster />

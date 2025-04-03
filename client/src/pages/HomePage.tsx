@@ -199,15 +199,25 @@ const HomePage = () => {
             </div>
           </div>
 
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setShowProductRecommendations(false);
-            }}
-            className="mb-4"
-          >
-            Change Location
-          </Button>
+          <div className="flex justify-between mb-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedPest(null);
+                setShowProductRecommendations(false);
+              }}
+            >
+              Back to Pests
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowProductRecommendations(false);
+              }}
+            >
+              Change Location
+            </Button>
+          </div>
 
           {state.products.map((product: Product) => (
             <ProductCard 
