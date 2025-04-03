@@ -13,8 +13,14 @@ const SearchInterface = ({ onSearch }: SearchInterfaceProps) => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   
   const placeholders = [
-    "what's bugging you?",
-    "Give service manager a break!"
+    "What's bugging you?",
+    "How to treat ants in kitchen?",
+    "Spiders on exterior wall",
+    "Mice in basement",
+    "Best product for wasps?",
+    "Stinkbugs on windows",
+    "Centipede infestation",
+    "Rodent control for attic"
   ];
 
   // Rotate placeholders periodically

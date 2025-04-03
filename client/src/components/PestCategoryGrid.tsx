@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PestCategory } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
-import { MapPin, Package } from 'lucide-react';
 import { 
   pestIcons,
   AntIcon, 
@@ -18,10 +17,9 @@ import {
 
 interface PestCategoryGridProps {
   onPestSelect: (pestName: string) => void;
-  onGetProductsClick?: () => void;
 }
 
-const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGridProps) => {
+const PestCategoryGrid = ({ onPestSelect }: PestCategoryGridProps) => {
   const { data: categories, isLoading, error } = useQuery<PestCategory[]>({
     queryKey: ['/api/pest-categories'],
   });
@@ -75,22 +73,6 @@ const PestCategoryGrid = ({ onPestSelect, onGetProductsClick }: PestCategoryGrid
           </CardContent>
         </Card>
       ))}
-      
-      {/* Get Products with Map Integration */}
-      <Card
-        className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-        onClick={onGetProductsClick}
-      >
-        <CardContent className="flex flex-col items-center p-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-green-200 mb-2 flex items-center justify-center border-2 border-primary/50">
-            <Package className="w-10 h-10 text-primary" />
-          </div>
-          <div className="flex items-center gap-1 justify-center">
-            <span className="font-medium">Get Products</span>
-            <MapPin size={14} className="text-primary" />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

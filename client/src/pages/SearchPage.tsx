@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/container";
 import SearchInterface from "@/components/SearchInterface";
 import AIResponseBox from "@/components/AIResponseBox";
 import RecentSearches from "@/components/RecentSearches";
+import PestFact from "@/components/PestFact";
 import { usePestControl } from "@/hooks/usePestControl";
 import { AISearchResponse, Product } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -94,6 +95,9 @@ const SearchPage = () => {
         onSearchSelect={handleSearch} 
         getRecentSearches={getRecentSearches} 
       />
+      
+      {/* Fun Pest Fact at the bottom of the page */}
+      <PestFact />
     </Container>
   );
 };
