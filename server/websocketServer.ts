@@ -1,4 +1,4 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
 import { storage } from './storage';
 import { log } from './vite';
@@ -107,7 +107,7 @@ export function setupWebSocketServer(httpServer: Server) {
     const messageStr = JSON.stringify(message);
     
     clients.forEach((client) => {
-      if (client.readyState === 1) { // WebSocket.OPEN = 1
+      if (client.readyState === WebSocket.OPEN) {
         client.send(messageStr);
       }
     });
